@@ -10,10 +10,10 @@ using uint = std::uint32_t;
 
 namespace au {
 
-button::button(SDL_Rect const & bounds, SDL_Color const & fill_color,
-               SDL_Color const & border_color, uint border_thickness)
+button::button(SDL_Rect const & bounds, SDL_Color const & border_color,
+               SDL_Color const & fill_color, uint border_thickness)
 
-    : _bounds(bounds), _fill_color(fill_color), _border_color(border_color),
+    : _bounds(bounds), _border_color(border_color), _fill_color(fill_color),
       _border_thickness(static_cast<int>(border_thickness))
 {
 }
