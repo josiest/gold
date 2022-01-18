@@ -4,14 +4,15 @@ project(simple-gold-example)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-set(VERSION_MAJOR 1)
-set(VERSION_MINOR 1)
+set(VERSION_MAJOR 2)
+set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)
 
 find_package(gold REQUIRED)
+find_package(ion REQUIRED)
 
 file(GLOB sources *.cc)
 add_executable(example ${sources})
 
-include_directories(gold::gold SDL2::Core)
-target_link_libraries(example gold::gold)
+include_directories(gold::gold ion::ion)
+target_link_libraries(example gold::gold ion::ion)
