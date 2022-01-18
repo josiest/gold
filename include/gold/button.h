@@ -4,10 +4,10 @@
 #include <SDL.h>
 
 // data types
-#include "gui/widget.hpp"
+#include "gold/widget.h"
 #include <cstdint>
 
-namespace gui {
+namespace au {
 
 class button : public iwidget {
 public:

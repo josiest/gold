@@ -1,4 +1,4 @@
-#include "gui/button.hpp"
+#include "gold/button.h"
 
 // frameworks
 #include <SDL.h>
@@ -8,7 +8,7 @@
 
 using uint = std::uint32_t;
 
-namespace gui {
+namespace au {
 
 button::button(SDL_Rect const & bounds, SDL_Color const & fill_color,
                SDL_Color const & border_color, uint border_thickness)

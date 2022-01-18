@@ -2,7 +2,7 @@
 
 #include <SDL.h>
 
-namespace gui {
+namespace au {
 
 class iwidget {
 public:
