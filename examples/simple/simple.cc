@@ -53,22 +53,18 @@ int main()
     SDL_Color const light_blue{0x33, 0x99, 0xff, 0xff};
     SDL_Color const lighter_blue{0x99, 0xcc, 0xff, 0xff};
 
-    // Create the text for the button
-    std::string const button_text = "Click Me!";
-    ion::texture rendered_text =
-        dejavu_sans.render_text(window, button_text, white);
-    if (not rendered_text) {
-        std::cout << rendered_text.get_error() << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    // create a button
-    SDL_Rect const button_bounds{50, 50, 300, 100};
+    // create the button factory
     uint const border_width = 10;
     uint const padding = 5;
-    au::button simple_button(button_bounds, border_width, padding,
-                             charcoal, light_blue, lighter_blue, white,
-                             rendered_text);
+    au::button_bag buttons(
+            dejavu_sans, border_width, padding,
+            charcoal, light_blue, lighter_blue, white
+            );
+
+    // create a button
+    au::iwidget * simple_button = buttons.make(
+            window, "Click Me!", SDL_Rect{50, 50, 300, 100}
+            );
 
     bool has_quit = false;
     while (not has_quit) {
@@ -85,7 +81,7 @@ int main()
         SDL_RenderClear(window);
 
         // draw the button and update the screen
-        simple_button.render(window);
+        simple_button->render(window);
         SDL_RenderPresent(window);
     }
     return EXIT_SUCCESS;
