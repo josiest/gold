@@ -2,6 +2,10 @@
 
 An _extremely_ simple gui framework for SDL2.
 
+## Usage
+
+To come ...
+
 ## Installing
 
 ### Requirements
