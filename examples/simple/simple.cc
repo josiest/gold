@@ -7,12 +7,16 @@
 // constants
 #include <cstdlib> // EXIT_SUCCESS, EXIT_FAILURE
 
+// data types
+#include <cstdint> // std::uint32_t
+
 // i/o
 #include <iostream>
 #include <filesystem> // fs::path, fs::absolute
 
 // aliases 
 namespace fs = std::filesystem;
+using uint = std::uint32_t;
 
 int main()
 {
@@ -55,8 +59,10 @@ int main()
     // create a button
     SDL_Rect const button_bounds{50, 50, 300, 100};
     SDL_Color const white{0xff, 0xff, 0xff, 0xff};
-    au::button simple_button(button_bounds, black, white, 10,
-                             rendered_text, 5, 5);
+    uint const border_width = 10;
+    uint const padding = 5;
+    au::button simple_button(button_bounds, black, white, border_width,
+                             rendered_text, padding);
 
     bool has_quit = false;
     while (not has_quit) {
