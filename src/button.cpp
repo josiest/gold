@@ -1,4 +1,4 @@
-#include "gold/button.h"
+#include "gold/button.hpp"
 
 // frameworks
 #include <SDL.h>

@@ -1,9 +1,9 @@
-#include "gold/button_bag.h"
+#include "gold/button_bag.hpp"
 
 // frameworks and interfaces
 #include <SDL.h>
 #include <SDL_ttf.h>
-#include "gold/widget.h" // iwidget_factory
+#include "gold/widget.hpp" // iwidget_factory
 #include <tl/expected.hpp>
 
 // data structures and resource handlers
@@ -11,7 +11,7 @@
 #include <memory> // std::unique_ptr
 
 // data types
-#include "gold/button.h"
+#include "gold/button.hpp"
 #include <cstdint> // std::uint32_t
 
 using uint = std::uint32_t;

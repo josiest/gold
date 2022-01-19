@@ -4,7 +4,7 @@
 #include <SDL.h>
 
 // data types
-#include "gold/widget.h"
+#include "gold/widget.hpp"
 #include <cstdint>
 
 namespace au {

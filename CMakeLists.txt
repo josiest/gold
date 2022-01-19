@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 project(gold)
 
-# relase versioning
+# release versioning
 set(gold_MAJOR_VERSION 0)
 set(gold_MINOR_VERSION 0)
 set(gold_PATCH_VERSION 0)
@@ -23,8 +23,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # specify the file interface
-set(gold_SRCEXT cc)
-set(gold_HEXT h)
+set(gold_SRCEXT cpp)
+set(gold_HEXT hpp)
 set(gold_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # define the library
