@@ -48,11 +48,21 @@ int main()
     }
 
     // Create the text for the button
+    std::string const button_text = "Click Me!";
     SDL_Color const black{0, 0, 0, 0xff};
     ion::texture rendered_text =
-        dejavu_sans.render_text(window, "Click Me!", black);
+        dejavu_sans.render_text(window, button_text, black);
     if (not rendered_text) {
         std::cout << rendered_text.get_error() << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    // Create the hover text
+    SDL_Color const light_blue{0x33, 0x99, 0xff, 0xff};
+    ion::texture hover_text =
+        dejavu_sans.render_text(window, button_text, light_blue);
+    if (not hover_text) {
+        std::cout << hover_text.get_error() << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -61,8 +71,9 @@ int main()
     SDL_Color const white{0xff, 0xff, 0xff, 0xff};
     uint const border_width = 10;
     uint const padding = 5;
-    au::button simple_button(button_bounds, black, white, border_width,
-                             rendered_text, padding);
+    au::button simple_button(button_bounds, border_width, padding,
+                             black, light_blue, white,
+                             rendered_text, hover_text);
 
     bool has_quit = false;
     while (not has_quit) {
