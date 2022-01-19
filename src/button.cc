@@ -12,19 +12,19 @@ namespace au {
 
 button::button(SDL_Rect const & bounds, uint border_thickness, uint padding,
 
-               SDL_Color const & border_color, SDL_Color const & hover_color,
-               SDL_Color const & fill_color,
+               SDL_Color const & standard_color, SDL_Color const & hover_color,
+               SDL_Color const & click_color, SDL_Color const & fill_color,
 
-               SDL_Texture * content, SDL_Texture * hover_content)
+               SDL_Texture * content)
 
     : _bounds(bounds),
       _border_thickness(static_cast<int>(border_thickness)),
       _padding(static_cast<int>(padding)),
 
-      _border_color(border_color), _hover_color(hover_color),
-      _fill_color(fill_color),
+      _standard_color(standard_color), _hover_color(hover_color),
+      _click_color(click_color), _fill_color(fill_color),
 
-      _content(content), _hover_content(hover_content)
+      _content(content)
 {
 }
 
@@ -32,17 +32,17 @@ void button::render(SDL_Renderer * renderer)
 {
     // set the respective border color and content texture
     // based on the mouse position
-    SDL_Color border_color = _border_color;
-    SDL_Texture * content = _content;
-
-    if (_mouse_in_bounds()) {
-        border_color = _hover_color;
-        content = _hover_content;
+    SDL_Color draw_color = _standard_color;
+    if (_mouse_in_bounds() and _mouse_clicked()) {
+        draw_color = _click_color;
+    }
+    else if (_mouse_in_bounds()) {
+        draw_color = _hover_color;
     }
 
     // fill from the outer border
-    SDL_SetRenderDrawColor(renderer, border_color.r, border_color.g,
-                                     border_color.b, border_color.a);
+    SDL_SetRenderDrawColor(renderer, draw_color.r, draw_color.g,
+                                     draw_color.b, draw_color.a);
     SDL_RenderFillRect(renderer, &_bounds);
 
     // fill from the inner border
@@ -54,7 +54,8 @@ void button::render(SDL_Renderer * renderer)
     // render the button content
     SDL_Rect const src = _clipped_texture_bounds();
     SDL_Rect const dst = _content_bounds();
-    SDL_RenderCopy(renderer, content, &src, &dst);
+    SDL_SetTextureColorMod(_content, draw_color.r, draw_color.g, draw_color.b);
+    SDL_RenderCopy(renderer, _content, &src, &dst);
 }
 
 SDL_Rect button::_inner_bounds() const
@@ -120,5 +121,10 @@ bool button::_mouse_in_bounds() const
     SDL_GetMouseState(&x, &y);
     return x >= _bounds.x && x <= _bounds.x + _bounds.w
         && y >= _bounds.y && y <= _bounds.y + _bounds.h;
+}
+
+bool button::_mouse_clicked() const
+{
+    return (SDL_GetMouseState(nullptr, nullptr) & SDL_BUTTON_LMASK) != 0;
 }
 }

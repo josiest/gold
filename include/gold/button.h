@@ -16,10 +16,10 @@ public:
     button(SDL_Rect const & bounds,
            std::uint32_t border_thickness, std::uint32_t padding,
 
-           SDL_Color const & border_color, SDL_Color const & hover_color,
-           SDL_Color const & fill_color,
+           SDL_Color const & standard_color, SDL_Color const & hover_color,
+           SDL_Color const & click_color, SDL_Color const & fill_color,
 
-           SDL_Texture * content, SDL_Texture * hover_content);
+           SDL_Texture * content);
 
     // interface methods
     inline SDL_Rect bounds() const { return _bounds; }
@@ -29,12 +29,12 @@ private:
     int _border_thickness;
     int _padding;
 
-    SDL_Color _border_color;
+    SDL_Color _standard_color;
     SDL_Color _hover_color;
+    SDL_Color _click_color;
     SDL_Color _fill_color;
 
     SDL_Texture * _content;
-    SDL_Texture * _hover_content;
 
     // get the bounding rect of the button inside the border
     SDL_Rect _inner_bounds() const;
@@ -50,5 +50,8 @@ private:
 
     // determine if the mouse is in the bounds of this button
     bool _mouse_in_bounds() const;
+
+    // determine of the mouse was clicked
+    bool _mouse_clicked() const;
 };
 }
