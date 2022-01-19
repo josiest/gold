@@ -29,6 +29,14 @@ cmake --build .
 sudo cmake --install .
 ```
 
-## Why the name gold?
+## Why?
 
+### Why not use [Dear ImGui](https://github.com/ocornut/imgui)?
+Because it requires OpenGL to work with SDL2 - if you don't want to set that up,
+this library is _an_ alternative.
+
+### Why not use one of the _many_ other existing SDL2 gui libraries
+Idk, it's up to you.
+
+### Why the name gold?
 Because gui means "expensive" in Chinese
