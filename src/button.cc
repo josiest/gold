@@ -21,7 +21,7 @@ button::button(SDL_Rect const & bounds, uint border_thickness, uint padding,
       _border_thickness(static_cast<int>(border_thickness)),
       _padding(static_cast<int>(padding)),
 
-      _border_color(border_color),
+      _border_color(border_color), _hover_color(hover_color),
       _fill_color(fill_color),
 
       _content(content), _hover_content(hover_content)
