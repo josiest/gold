@@ -1,7 +1,7 @@
 // frameworks
 #include <SDL.h>
 #include <SDL_ttf.h>
-#include <gold/gold.h>
+#include <gold/gold.hpp>
 #include <ion/ion.hpp>
 
 // constants
