@@ -10,22 +10,39 @@ using uint = std::uint32_t;
 
 namespace au {
 
-button::button(SDL_Rect const & bounds,
-               SDL_Color const & border_color, SDL_Color const & fill_color,
-               uint border_thickness, SDL_Texture * content, uint padding)
+button::button(SDL_Rect const & bounds, uint border_thickness, uint padding,
+
+               SDL_Color const & border_color, SDL_Color const & hover_color,
+               SDL_Color const & fill_color,
+
+               SDL_Texture * content, SDL_Texture * hover_content)
 
     : _bounds(bounds),
-      _border_color(border_color), _fill_color(fill_color),
       _border_thickness(static_cast<int>(border_thickness)),
-      _content(content), _padding(static_cast<int>(padding))
+      _padding(static_cast<int>(padding)),
+
+      _border_color(border_color),
+      _fill_color(fill_color),
+
+      _content(content), _hover_content(hover_content)
 {
 }
 
 void button::render(SDL_Renderer * renderer)
 {
+    // set the respective border color and content texture
+    // based on the mouse position
+    SDL_Color border_color = _border_color;
+    SDL_Texture * content = _content;
+
+    if (_mouse_in_bounds()) {
+        border_color = _hover_color;
+        content = _hover_content;
+    }
+
     // fill from the outer border
-    SDL_SetRenderDrawColor(renderer, _border_color.r, _border_color.g,
-                                     _border_color.b, _border_color.a);
+    SDL_SetRenderDrawColor(renderer, border_color.r, border_color.g,
+                                     border_color.b, border_color.a);
     SDL_RenderFillRect(renderer, &_bounds);
 
     // fill from the inner border
@@ -37,7 +54,7 @@ void button::render(SDL_Renderer * renderer)
     // render the button content
     SDL_Rect const src = _clipped_texture_bounds();
     SDL_Rect const dst = _content_bounds();
-    SDL_RenderCopy(renderer, _content, &src, &dst);
+    SDL_RenderCopy(renderer, content, &src, &dst);
 }
 
 SDL_Rect button::_inner_bounds() const
@@ -95,5 +112,13 @@ SDL_Rect button::_clipped_texture_bounds() const
     }
 
     return { 0, 0, texture_width, texture_height };
+}
+
+bool button::_mouse_in_bounds() const
+{
+    int x = 0, y = 0;
+    SDL_GetMouseState(&x, &y);
+    return x >= _bounds.x && x <= _bounds.x + _bounds.w
+        && y >= _bounds.y && y <= _bounds.y + _bounds.h;
 }
 }

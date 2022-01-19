@@ -12,24 +12,29 @@ namespace au {
 class button : public iwidget {
 public:
     button() = delete;
+
     button(SDL_Rect const & bounds,
+           std::uint32_t border_thickness, std::uint32_t padding,
 
-           SDL_Color const & border_color, SDL_Color const & fill_color,
-           std::uint32_t border_thickness,
+           SDL_Color const & border_color, SDL_Color const & hover_color,
+           SDL_Color const & fill_color,
 
-           SDL_Texture * content, std::uint32_t padding);
+           SDL_Texture * content, SDL_Texture * hover_content);
 
     // interface methods
     inline SDL_Rect bounds() const { return _bounds; }
     void render(SDL_Renderer * renderer);
 private:
     SDL_Rect _bounds;
-    SDL_Color _border_color;
-    SDL_Color _fill_color;
     int _border_thickness;
+    int _padding;
+
+    SDL_Color _border_color;
+    SDL_Color _hover_color;
+    SDL_Color _fill_color;
 
     SDL_Texture * _content;
-    int _padding;
+    SDL_Texture * _hover_content;
 
     // get the bounding rect of the button inside the border
     SDL_Rect _inner_bounds() const;
@@ -42,5 +47,8 @@ private:
 
     // get the bounding rect to draw the texture from
     SDL_Rect _clipped_texture_bounds() const;
+
+    // determine if the mouse is in the bounds of this button
+    bool _mouse_in_bounds() const;
 };
 }
