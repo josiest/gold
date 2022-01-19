@@ -21,6 +21,8 @@ In order to install and use gold, there are a few requirements:
 - [`cpp-yaml`](https://github.com/jbeder/yaml-cpp): gui elements have a lot of
   parameters associated with them - serialization makes instantiation simpler
 
+### Installation Process (for debian-based systems...)
+
 ```bash
 git clone <url> && cd gold
 mkdir build && cd build
@@ -35,7 +37,7 @@ sudo cmake --install .
 Because it requires OpenGL to work with SDL2 - if you don't want to set that up,
 this library is _an_ alternative.
 
-### Why not use one of the _many_ other existing SDL2 gui libraries
+### Why not use one of the _many_ other existing gui libraries?
 Idk, it's up to you.
 
 ### Why the name gold?
