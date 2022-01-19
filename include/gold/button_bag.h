@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include "gold/widget.h" // iwidget_factory
+#include <tl/expected.hpp>
 
 // data structures and resource handlers
 #include <vector>
@@ -28,8 +29,9 @@ public:
                SDL_Color const & standard_color, SDL_Color const & hover_color,
                SDL_Color const & click_color, SDL_Color const & fill_color);
 
-    iwidget * make(SDL_Renderer * renderer, std::string const & text,
-                   SDL_Rect const & bounds);
+    tl::expected<iwidget *, std::string>
+        make(SDL_Renderer * renderer, std::string const & text,
+             SDL_Rect const & bounds);
 private:
     std::vector<std::unique_ptr<button>> _buttons;
     std::unordered_map<std::string, std::unique_ptr<
