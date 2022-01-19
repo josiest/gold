@@ -9,6 +9,7 @@
 
 // data types
 #include <cstdint> // std::uint32_t
+#include <tl/expected.hpp>
 
 // i/o
 #include <iostream>
@@ -62,19 +63,17 @@ int main()
             );
 
     // create a button
-    au::iwidget * simple_button = buttons.make(
+    auto expected_button = buttons.make(
             window, "Click Me!", SDL_Rect{50, 50, 300, 100}
             );
+    if (not expected_button) {
+        std::cout << expected_button.error() << std::endl;
+        return EXIT_FAILURE;
+    }
+    au::iwidget * simple_button = *expected_button;
 
-    bool has_quit = false;
-    while (not has_quit) {
-        SDL_Event event;
-
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                has_quit = true;
-            }
-        }
+    while (not ion::input::has_quit()) {
+        events.process_queue();
 
         // clear the screen white
         SDL_SetRenderDrawColor(window, 0xff, 0xff, 0xff, 0xff);
