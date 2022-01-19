@@ -1,15 +1,27 @@
 #pragma once
 
 #include <SDL.h>
+#include <string>
 
 namespace au {
 
 class iwidget {
 public:
     /** Get the bounds of this widget. */
-    SDL_Rect bounds() const;
+    virtual SDL_Rect bounds() const = 0;
 
     /** Render this widget. */
-    void render(SDL_Renderer * renderer);
+    virtual void render(SDL_Renderer * renderer) = 0;
+
+    virtual ~iwidget() {}
+};
+
+class iwidget_factory {
+public:
+    /** Make a widget with text */
+    virtual iwidget * make(SDL_Renderer * renderer, std::string const & text,
+                           SDL_Rect const & bounds);
+
+    virtual ~iwidget_factory() {}
 };
 }
