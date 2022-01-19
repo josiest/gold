@@ -20,7 +20,7 @@ class iwidget_factory {
 public:
     /** Make a widget with text */
     virtual iwidget * make(SDL_Renderer * renderer, std::string const & text,
-                           SDL_Rect const & bounds);
+                           SDL_Rect const & bounds) = 0;
 
     virtual ~iwidget_factory() {}
 };
