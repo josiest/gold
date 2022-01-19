@@ -17,8 +17,7 @@ public:
            SDL_Color const & border_color, SDL_Color const & fill_color,
            std::uint32_t border_thickness,
 
-           SDL_Texture * content,
-           std::uint32_t horizontal_padding, std::uint32_t vertical_padding);
+           SDL_Texture * content, std::uint32_t padding);
 
     // interface methods
     inline SDL_Rect bounds() const { return _bounds; }
@@ -30,8 +29,7 @@ private:
     int _border_thickness;
 
     SDL_Texture * _content;
-    int _horizontal_padding;
-    int _vertical_padding;
+    int _padding;
 
     // get the bounding rect of the button inside the border
     SDL_Rect _inner_bounds() const;

@@ -11,21 +11,13 @@ using uint = std::uint32_t;
 namespace au {
 
 button::button(SDL_Rect const & bounds,
-
                SDL_Color const & border_color, SDL_Color const & fill_color,
-               uint border_thickness,
-               
-               SDL_Texture * content,
-               uint horizontal_padding, uint vertical_padding)
+               uint border_thickness, SDL_Texture * content, uint padding)
 
     : _bounds(bounds),
-    
       _border_color(border_color), _fill_color(fill_color),
       _border_thickness(static_cast<int>(border_thickness)),
-
-      _content(content),
-      _horizontal_padding(static_cast<int>(horizontal_padding)),
-      _vertical_padding(static_cast<int>(vertical_padding))
+      _content(content), _padding(static_cast<int>(padding))
 {
 }
 
@@ -60,10 +52,8 @@ SDL_Rect button::_max_content_bounds() const
 {
     SDL_Rect const inner_bounds = _inner_bounds();
     return {
-        inner_bounds.x + _horizontal_padding,
-        inner_bounds.y + _vertical_padding,
-        inner_bounds.w - 2*_horizontal_padding,
-        inner_bounds.h - 2*_vertical_padding
+        inner_bounds.x + _padding, inner_bounds.y + _padding,
+        inner_bounds.w - 2*_padding, inner_bounds.h - 2*_padding
     };
 }
 

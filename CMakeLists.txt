@@ -7,7 +7,7 @@ set(gold_MINOR_VERSION 0)
 set(gold_PATCH_VERSION 0)
 
 # pre-release versioning
-set(gold_PRE_MAJOR_VERSION 4)
+set(gold_PRE_MAJOR_VERSION 5)
 set(gold_PRE_MINOR_VERSION 0)
 set(gold_PRE_PATCH_VERSION 0)
 
