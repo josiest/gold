@@ -3,7 +3,7 @@
 // frameworks and interfaces
 #include <SDL.h>
 #include <SDL_ttf.h>
-#include "gold/widget.hpp" // iwidget_factory
+#include "gold/widget.hpp" // iwidget
 #include <tl/expected.hpp>
 
 // data structures and resource handlers
@@ -21,17 +21,21 @@ struct texture_deleter {
     void operator()(SDL_Texture * texture) { SDL_DestroyTexture(texture); }
 };
 
-class button_bag : public iwidget_factory {
+/** A resource manager/factory class for gold buttons. */
+class button_bag {
 public:
     button_bag() = delete;
+
+    /** Create a button bag that makes buttons with the specified settings. */
     button_bag(TTF_Font * font,
                std::uint32_t border_thickness, std::uint32_t padding,
                SDL_Color const & standard_color, SDL_Color const & hover_color,
                SDL_Color const & click_color, SDL_Color const & fill_color);
 
+    /** Make a new widget */
     tl::expected<iwidget *, std::string>
-        make(SDL_Renderer * renderer, std::string const & text,
-             SDL_Rect const & bounds);
+        make_widget(SDL_Renderer * renderer, std::string const & text,
+                    SDL_Rect const & bounds);
 private:
     std::vector<std::unique_ptr<button>> _buttons;
     std::unordered_map<std::string, std::unique_ptr<

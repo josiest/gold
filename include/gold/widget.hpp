@@ -3,6 +3,7 @@
 #include <tl/expected.hpp>
 #include <SDL.h>
 #include <string>
+#include <concepts>
 
 namespace au {
 
@@ -17,13 +18,12 @@ public:
     virtual ~iwidget() {}
 };
 
-class iwidget_factory {
-public:
-    /** Make a widget with text */
-    virtual tl::expected<iwidget *, std::string>
-        make(SDL_Renderer * renderer, std::string const & text,
-             SDL_Rect const & bounds) = 0;
+template<class factory_t, typename error_t = std::string>
+concept widget_factory =
+    requires(factory_t & factory, SDL_Renderer * renderer,
+             std::string const & text, SDL_Rect const & bounds) {
 
-    virtual ~iwidget_factory() {}
+    { factory.make_widget(renderer, text, bounds) } ->
+        std::same_as<tl::expected<iwidget *, error_t>>;
 };
 }

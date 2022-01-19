@@ -32,8 +32,8 @@ button_bag::button_bag(
 }
 
 tl::expected<iwidget *, std::string>
-button_bag::make(SDL_Renderer * renderer, std::string const & text,
-                 SDL_Rect const & bounds)
+button_bag::make_widget(SDL_Renderer * renderer, std::string const & text,
+                        SDL_Rect const & bounds)
 {
     // render the text white to get pure color modulation capability
     static SDL_Color const white{0xff, 0xff, 0xff, 0xff};
