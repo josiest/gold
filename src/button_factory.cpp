@@ -3,20 +3,31 @@
 // frameworks and interfaces
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <yaml-cpp/yaml.h>
+#include <filesystem>   // fs::path, fs::is_regular_file
 #include "gold/widget.hpp" // iwidget_factory
-#include <tl/expected.hpp>
 
 // data structures and resource handlers
 #include <vector>
 #include <memory> // std::unique_ptr
+#include <tl/expected.hpp>
 
 // data types
 #include "gold/button.hpp"
 #include <cstdint> // std::uint32_t
 
+// i/o
+#include <sstream>
+
+// aliases
 using uint = std::uint32_t;
+using namespace std::string_literals;
+namespace fs = std::filesystem;
 
 namespace au {
+
+// declare static class variables
+std::unordered_map<std::string, SDL_Color> button_factory::_colors;
 
 button_factory::button_factory(
         TTF_Font * font,
@@ -66,5 +77,36 @@ button_factory::make_widget(SDL_Renderer * renderer, std::string const & text,
                 _standard_color, _hover_color, _click_color, _fill_color,
                 rendered_text
                 )).get();
+}
+
+result<bool>
+button_factory::load_colors(fs::path const & path)
+{
+    // make sure the path exists and is a file
+    if (not fs::exists(path) or fs::is_regular_file(path)) {
+        std::stringstream message;
+        if (not fs::exists(path)) message << path << " doesn't exist";
+        if (not fs::is_regular_file(path)) message << path << " isn't a file";
+        return tl::unexpected(message.str());
+    }
+
+    YAML::Node colors = YAML::LoadFile(path);
+
+    // can't load a map that isn't a map
+    if (not colors.IsMap())
+        return tl::unexpected("colors should be defined as a yaml map"s);
+
+    for (auto const & item : colors) {
+        // each entry must point to an rgb color sequence
+        if (not item.second.IsSequence() or item.second.size() != 3)
+            return tl::unexpected("color definitions should have the form [r, g, b]"s);
+
+        // each value mus be a scalar
+        for (auto const & val : item.second)
+            if (not val.IsScalar())
+                return tl::unexpected("color definition values should be scalar"s);
+    }
+    _colors = colors.as<color_table>();
+    return true;
 }
 }

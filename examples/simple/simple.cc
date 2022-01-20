@@ -56,15 +56,20 @@ int main()
         return EXIT_FAILURE;
     }
 
+    // directory constants
+    auto const asset_dir = fs::absolute("../assets");
+    auto const font_dir = asset_dir/"fonts";
+    auto const config_dir = asset_dir/"config";
+
     // Load a font
-    fs::path const font_path = fs::absolute("../assets/fonts/DejaVuSans.ttf");
-    ion::font dejavu_sans = ion::font::from_file(font_path, 100);
+    ion::font dejavu_sans = ion::font::from_file(font_dir/"DejaVuSans.ttf", 100);
     if (not dejavu_sans) {
         std::cout << dejavu_sans.get_error() << std::endl;
         return EXIT_FAILURE;
     }
 
     // define some colors
+    au::button_factory::load_colors(config_dir/"colors.yaml");
     SDL_Color const white{0xff, 0xff, 0xff, 0xff};
     SDL_Color const charcoal{0x40, 0x40, 0x40, 0xff};
     SDL_Color const light_blue{0x33, 0x99, 0xff, 0xff};

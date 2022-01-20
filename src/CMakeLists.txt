@@ -13,7 +13,8 @@ target_include_directories(gold PUBLIC
 # add dependent libraries
 find_package(SDL2 REQUIRED)
 find_package(SDL2_ttf REQUIRED)
-target_link_libraries(gold SDL2::Core SDL2::TTF)
+find_package(yaml-cpp REQUIRED)
+target_link_libraries(gold SDL2::Core SDL2::TTF yaml-cpp)
 
 # --- export the library ---
 
