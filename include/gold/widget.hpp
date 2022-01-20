@@ -1,11 +1,25 @@
 #pragma once
 
-#include <tl/expected.hpp>
+// frameworks and interfaces
 #include <SDL.h>
-#include <string>
 #include <concepts>
+#include <tl/expected.hpp>
+
+// data types
+#include <string>
+#include <memory> // std::unique_ptr
 
 namespace au {
+
+// destroy various sdl resources
+struct sdl_deleter {
+    void operator()(SDL_Texture * texture) { SDL_DestroyTexture(texture); }
+};
+
+// aliases
+using unique_texture = std::unique_ptr<SDL_Texture, sdl_deleter>;
+template<typename expected_t>
+using result = tl::expected<expected_t, std::string>;
 
 class iwidget {
 public:
@@ -18,12 +32,13 @@ public:
     virtual ~iwidget() {}
 };
 
-template<class factory_t, typename error_t = std::string>
+template<class factory_t>
 concept widget_factory =
+
     requires(factory_t & factory, SDL_Renderer * renderer,
              std::string const & text, SDL_Rect const & bounds) {
 
     { factory.make_widget(renderer, text, bounds) } ->
-        std::same_as<tl::expected<iwidget *, error_t>>;
+        std::same_as<result<iwidget *>>;
 };
 }
