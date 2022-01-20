@@ -19,6 +19,22 @@
 namespace fs = std::filesystem;
 using uint = std::uint32_t;
 
+auto print_message_fxn(au::iwidget * widget, std::string const & message)
+{
+    return [widget, &message](SDL_Event const & event) {
+
+        SDL_Rect const bounds = widget->bounds();
+        int const x = event.button.x;
+        int const y = event.button.y;
+
+        if (x >= bounds.x && x <= bounds.x + bounds.w
+                && y >= bounds.y && y <= bounds.y + bounds.h) {
+
+            std::cout << message << std::endl;
+        }
+    };
+}
+
 int main()
 {
     // create the sdl event-handler: quit when sdl's quit event is triggered
@@ -71,6 +87,10 @@ int main()
         return EXIT_FAILURE;
     }
     au::iwidget * simple_button = *expected_button;
+
+    // link sdl click event to this button
+    auto print_clicked = print_message_fxn(simple_button, "clicked!");
+    events.subscribe_functor(SDL_MOUSEBUTTONDOWN, print_message);
 
     while (not ion::input::has_quit()) {
         events.process_queue();
