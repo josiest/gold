@@ -73,7 +73,7 @@ int main()
     // create the button factory
     uint const border_width = 10;
     uint const padding = 5;
-    au::button_bag buttons(
+    au::button_factory buttons(
             dejavu_sans, border_width, padding,
             charcoal, light_blue, lighter_blue, white
             );
@@ -90,7 +90,7 @@ int main()
 
     // link sdl click event to this button
     auto print_clicked = print_message_fxn(simple_button, "clicked!");
-    events.subscribe_functor(SDL_MOUSEBUTTONDOWN, print_message);
+    events.subscribe_functor(SDL_MOUSEBUTTONDOWN, print_clicked);
 
     while (not ion::input::has_quit()) {
         events.process_queue();
