@@ -63,7 +63,7 @@ int main()
             );
 
     // create a button
-    auto expected_button = buttons.make(
+    auto expected_button = buttons.make_widget(
             window, "Click Me!", SDL_Rect{50, 50, 300, 100}
             );
     if (not expected_button) {
