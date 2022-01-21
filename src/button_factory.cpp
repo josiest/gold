@@ -6,6 +6,7 @@
 #include <yaml-cpp/yaml.h>
 #include <filesystem>   // fs::path, fs::is_regular_file
 #include "gold/widget.hpp" // iwidget_factory
+#include <ranges>
 
 // data structures and resource handlers
 #include <vector>
@@ -19,6 +20,9 @@
 // i/o
 #include <sstream>
 
+//DEBUG
+#include <iostream>
+
 // aliases
 using uint = std::uint32_t;
 using namespace std::string_literals;
@@ -27,7 +31,8 @@ namespace fs = std::filesystem;
 namespace au {
 
 // declare static class variables
-std::unordered_map<std::string, SDL_Color> button_factory::_colors;
+color_table button_factory::_colors;
+font_table button_factory::_fonts;
 
 button_factory::button_factory(
         TTF_Font * font,
@@ -82,31 +87,110 @@ button_factory::make_widget(SDL_Renderer * renderer, std::string const & text,
 result<bool>
 button_factory::load_colors(fs::path const & path)
 {
+    std::error_code ec; // using error codes tells filesystem not to throw
+
     // make sure the path exists and is a file
-    if (not fs::exists(path) or fs::is_regular_file(path)) {
+    if (not fs::exists(path, ec) or not fs::is_regular_file(path, ec)) {
+
         std::stringstream message;
-        if (not fs::exists(path)) message << path << " doesn't exist";
-        if (not fs::is_regular_file(path)) message << path << " isn't a file";
+        if (ec) {
+            message << ec.message();
+        }
+        else if (not fs::exists(path)) {
+            message << path << " doesn't exist";
+        }
+        else if (not fs::is_regular_file(path)) {
+            message << path << " isn't a file";
+        }
         return tl::unexpected(message.str());
     }
 
     YAML::Node colors = YAML::LoadFile(path);
 
     // can't load a map that isn't a map
-    if (not colors.IsMap())
+    if (not colors.IsMap()) {
         return tl::unexpected("colors should be defined as a yaml map"s);
-
+    }
     for (auto const & item : colors) {
         // each entry must point to an rgb color sequence
-        if (not item.second.IsSequence() or item.second.size() != 3)
+        if (not item.second.IsSequence() or item.second.size() != 3) {
             return tl::unexpected("color definitions should have the form [r, g, b]"s);
-
+        }
         // each value mus be a scalar
-        for (auto const & val : item.second)
-            if (not val.IsScalar())
+        for (auto const & val : item.second) {
+            if (not val.IsScalar()) {
                 return tl::unexpected("color definition values should be scalar"s);
+            }
+        }
     }
     _colors = colors.as<color_table>();
     return true;
+}
+
+// determine if a path is a valid font file
+auto _is_font_fxn(std::error_code & ec) {
+    return [&ec](fs::path const & path) {
+        return fs::is_regular_file(path, ec) and path.extension() == ".ttf";
+    };
+}
+// load a font-name, font-pointer pair from a font file
+font_table::value_type _load_as_pair(fs::path const & path) {
+    return std::make_pair(path.stem(), TTF_OpenFont(path.c_str(), 100));
+}
+// create a unique font pointer from a name-pointer pair
+unique_font _as_unique_font(TTF_Font * font) {
+    return unique_font(font, sdl_deleter{});
+}
+// determine if a font pointer is null from a name-pointer pair
+bool _font_is_null(TTF_Font const * font) {
+    return font == nullptr;
+}
+
+result<std::vector<unique_font>>
+button_factory::load_all_fonts(fs::path const & dir)
+{
+    namespace views = std::views;
+    namespace ranges = std::ranges;
+
+    std::error_code ec; // using error codes tells filesystem not to throw
+
+    // make sure the path exists and is a valid directory
+    if (not fs::exists(dir, ec) or not fs::is_directory(dir, ec)) {
+        std::stringstream message;
+        if (ec) { message << ec.message(); } // an os call failed
+        else if (not fs::exists(dir)) { message << dir << " doesn't exist"; }
+        else if (not fs::is_directory(dir)) { message << dir << " isn't a directory"; }
+        return tl::unexpected(message.str());
+    }
+
+    // recursively get all paths in directory
+    std::vector<fs::path> paths(fs::recursive_directory_iterator(dir, ec), {});
+
+    // filter only font files and load them as name-font pairs
+    auto is_font = _is_font_fxn(ec);
+    auto font_files = paths | views::filter(is_font);
+    auto into_table = std::inserter(_fonts, _fonts.end());
+    ranges::transform(font_files, into_table, &_load_as_pair);
+
+    // put all the successfully loaded fonts into a vector of unique pointers
+    // the font resources are freed automatically if returning unexpected
+    // otherwise this is the expected result
+    std::vector<unique_font> font_handle;
+    auto into_handles = std::back_inserter(font_handle);
+    auto fonts = _fonts | views::values;
+    ranges::transform(fonts, into_handles, &_as_unique_font);
+
+    // abort if any os calls failed in the process
+    // or if some fonts couldn't be loaded
+    bool const loading_failed = ranges::any_of(fonts, &_font_is_null);
+    if (ec or loading_failed) {
+        std::string message;
+        if (ec) { message = ec.message(); }
+        if (loading_failed) { message = TTF_GetError(); }
+        _fonts.clear(); // clean up
+        return tl::unexpected(message);
+    }
+
+    return font_handle;
 }
 }

@@ -1,7 +1,10 @@
 #pragma once
 
-// frameworks and interfaces
+// frameworks
 #include <SDL.h>
+#include <SDL_ttf.h>
+
+// interfaces
 #include <concepts>
 #include <tl/expected.hpp>
 
@@ -14,10 +17,13 @@ namespace au {
 // destroy various sdl resources
 struct sdl_deleter {
     void operator()(SDL_Texture * texture) { SDL_DestroyTexture(texture); }
+    void operator()(TTF_Font * font) { TTF_CloseFont(font); }
 };
 
 // aliases
 using unique_texture = std::unique_ptr<SDL_Texture, sdl_deleter>;
+using unique_font = std::unique_ptr<TTF_Font, sdl_deleter>;
+
 template<typename expected_t>
 using result = tl::expected<expected_t, std::string>;
 

@@ -68,8 +68,18 @@ int main()
         return EXIT_FAILURE;
     }
 
-    // define some colors
-    au::button_factory::load_colors(config_dir/"colors.yaml");
+    // define some colors and fonts
+    auto colors_loaded = au::button_factory::load_colors(config_dir/"colors.yaml");
+    if (not colors_loaded) {
+        std::cout << colors_loaded.error() << std::endl;
+        return EXIT_FAILURE;
+    }
+    auto fonts = au::button_factory::load_all_fonts(font_dir);
+    if (not fonts) {
+        std::cout << fonts.error() << std::endl;
+        return EXIT_FAILURE;
+    }
+
     SDL_Color const white{0xff, 0xff, 0xff, 0xff};
     SDL_Color const charcoal{0x40, 0x40, 0x40, 0xff};
     SDL_Color const light_blue{0x33, 0x99, 0xff, 0xff};
@@ -109,4 +119,6 @@ int main()
         SDL_RenderPresent(window);
     }
     return EXIT_SUCCESS;
+
+    fonts->clear();
 }

@@ -20,6 +20,7 @@
 namespace au {
 
 using color_table = std::unordered_map<std::string, SDL_Color>;
+using font_table = std::unordered_map<std::string, TTF_Font *>;
 
 /** A resource manager/factory class for gold buttons. */
 class button_factory {
@@ -39,8 +40,13 @@ public:
 
     /** Load color definitions from a yaml file */
     static result<bool> load_colors(std::filesystem::path const & path);
+
+    /** Load fonts from a directory of fonts */
+    static result<std::vector<unique_font>>
+        load_all_fonts(std::filesystem::path const & dir);
 private:
     static color_table _colors;
+    static font_table _fonts;
 
     std::vector<std::unique_ptr<button>> _buttons;
     std::unordered_map<std::string, unique_texture> _texts;
