@@ -37,6 +37,12 @@ auto print_message_fxn(au::iwidget * widget, std::string const & message)
 
 int main()
 {
+
+    // directory constants
+    auto const asset_dir = fs::absolute("../assets");
+    auto const config_dir = asset_dir/"config";
+    auto const font_dir = asset_dir/"fonts";
+
     // create the sdl event-handler: quit when sdl's quit event is triggered
     ion::event_system events;
     events.subscribe(SDL_QUIT, &ion::input::quit_on_event);
@@ -56,18 +62,6 @@ int main()
         return EXIT_FAILURE;
     }
 
-    // directory constants
-    auto const asset_dir = fs::absolute("../assets");
-    auto const font_dir = asset_dir/"fonts";
-    auto const config_dir = asset_dir/"config";
-
-    // Load a font
-    ion::font dejavu_sans = ion::font::from_file(font_dir/"DejaVuSans.ttf", 100);
-    if (not dejavu_sans) {
-        std::cout << dejavu_sans.get_error() << std::endl;
-        return EXIT_FAILURE;
-    }
-
     // define some colors and fonts
     auto colors_loaded = au::button_factory::load_colors(config_dir/"colors.yaml");
     if (not colors_loaded) {
@@ -80,21 +74,15 @@ int main()
         return EXIT_FAILURE;
     }
 
-    SDL_Color const white{0xff, 0xff, 0xff, 0xff};
-    SDL_Color const charcoal{0x40, 0x40, 0x40, 0xff};
-    SDL_Color const light_blue{0x33, 0x99, 0xff, 0xff};
-    SDL_Color const lighter_blue{0x99, 0xcc, 0xff, 0xff};
-
     // create the button factory
-    uint const border_width = 10;
-    uint const padding = 5;
-    au::button_factory buttons(
-            dejavu_sans, border_width, padding,
-            charcoal, light_blue, lighter_blue, white
-            );
+    auto buttons = au::button_factory::from_file(config_dir/"button.yaml");
+    if (not buttons) {
+        std::cout << buttons.error() << std::endl;
+        return EXIT_FAILURE;
+    }
 
     // create a button
-    auto expected_button = buttons.make_widget(
+    auto expected_button = buttons->make_widget(
             window, "Click Me!", SDL_Rect{50, 50, 300, 100}
             );
     if (not expected_button) {
@@ -119,6 +107,4 @@ int main()
         SDL_RenderPresent(window);
     }
     return EXIT_SUCCESS;
-
-    fonts->clear();
 }

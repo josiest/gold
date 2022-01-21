@@ -1,0 +1,7 @@
+font: "DejaVuSans"
+border-width: 10
+padding: 5
+standard-color: "charcoal"
+hover-color: "light-blue"
+click-color: "lighter-blue"
+fill-color: "white"

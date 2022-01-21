@@ -44,13 +44,20 @@ public:
     /** Load fonts from a directory of fonts */
     static result<std::vector<unique_font>>
         load_all_fonts(std::filesystem::path const & dir);
+
+    /** Create a button factory from a button config file. */
+    static result<button_factory> from_file(std::filesystem::path const & path);
 private:
+    // static color and font definitions for reference
+    // when loading button configurations
     static color_table _colors;
     static font_table _fonts;
 
+    // the factory owns all button and texture resources it creates
     std::vector<std::unique_ptr<button>> _buttons;
     std::unordered_map<std::string, unique_texture> _texts;
 
+    // button configuration
     TTF_Font * _font;
     std::uint32_t _border_thickness;
     std::uint32_t _padding;

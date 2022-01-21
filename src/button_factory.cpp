@@ -20,9 +20,6 @@
 // i/o
 #include <sstream>
 
-//DEBUG
-#include <iostream>
-
 // aliases
 using uint = std::uint32_t;
 using namespace std::string_literals;
@@ -31,8 +28,13 @@ namespace fs = std::filesystem;
 namespace au {
 
 // declare static class variables
-color_table button_factory::_colors;
-font_table button_factory::_fonts;
+color_table button_factory::_colors{
+    {"black", SDL_Color{0, 0, 0, 0xff}},
+    {"white", SDL_Color{0xff, 0xff, 0xff, 0xff}},
+    {"gray", SDL_Color{0x66, 0x66, 0x66, 0xff}},
+    {"light-gray", SDL_Color{0xcc, 0xcc, 0xcc, 0xff}}
+};
+font_table button_factory::_fonts{};
 
 button_factory::button_factory(
         TTF_Font * font,
@@ -93,15 +95,9 @@ button_factory::load_colors(fs::path const & path)
     if (not fs::exists(path, ec) or not fs::is_regular_file(path, ec)) {
 
         std::stringstream message;
-        if (ec) {
-            message << ec.message();
-        }
-        else if (not fs::exists(path)) {
-            message << path << " doesn't exist";
-        }
-        else if (not fs::is_regular_file(path)) {
-            message << path << " isn't a file";
-        }
+        if (ec) { message << ec.message(); }
+        else if (not fs::exists(path)) { message << path << " doesn't exist"; }
+        else if (not fs::is_regular_file(path)) { message << path << " isn't a file"; }
         return tl::unexpected(message.str());
     }
 
@@ -122,8 +118,16 @@ button_factory::load_colors(fs::path const & path)
                 return tl::unexpected("color definition values should be scalar"s);
             }
         }
+        std::string name{""};
+        if (not YAML::convert<std::string>::decode(item.first, name)) {
+            return tl::unexpected("couldn't decode color name!"s);
+        }
+        SDL_Color color{0};
+        if (not YAML::convert<SDL_Color>::decode(item.second, color)) {
+            return tl::unexpected("coldn't decode color!"s);
+        }
+        _colors[name] = color;
     }
-    _colors = colors.as<color_table>();
     return true;
 }
 
@@ -176,13 +180,13 @@ button_factory::load_all_fonts(fs::path const & dir)
     // the font resources are freed automatically if returning unexpected
     // otherwise this is the expected result
     std::vector<unique_font> font_handle;
-    auto into_handles = std::back_inserter(font_handle);
-    auto fonts = _fonts | views::values;
-    ranges::transform(fonts, into_handles, &_as_unique_font);
+    auto into_handle = std::back_inserter(font_handle);
+    auto ttf_fonts = _fonts | views::values;
+    ranges::transform(ttf_fonts, into_handle, &_as_unique_font);
 
     // abort if any os calls failed in the process
     // or if some fonts couldn't be loaded
-    bool const loading_failed = ranges::any_of(fonts, &_font_is_null);
+    bool const loading_failed = ranges::any_of(ttf_fonts, &_font_is_null);
     if (ec or loading_failed) {
         std::string message;
         if (ec) { message = ec.message(); }
@@ -192,5 +196,54 @@ button_factory::load_all_fonts(fs::path const & dir)
     }
 
     return font_handle;
+}
+
+result<button_factory> button_factory::from_file(fs::path const & path)
+{
+    // use error codes to force filesystem not to throw
+    std::error_code ec;
+
+    // make sure the path exists and is valid
+    if (not fs::exists(path, ec) or not fs::is_regular_file(path, ec)) {
+        std::stringstream message;
+        if (ec) { message << ec.message(); } // an os call failed
+        else if (not fs::exists(path)) { message << path << " doesn't exist"; }
+        else if (not fs::is_regular_file(path)) { message << path << " isn't a file"; }
+        return tl::unexpected(message.str());
+    }
+
+    // can't load a map that isn't a map
+    YAML::Node config = YAML::LoadFile(path);
+    if (not config.IsMap()) {
+        return tl::unexpected("button config should be a yaml map"s);
+    }
+    // load parameters or use defaults
+    auto const font = config["font"].as<std::string>("DejaVuSans");
+    int const border_width = config["border-width"].as<int>(0);
+    int const padding = config["padding"].as<int>(0);
+    auto const standard_color = config["standard-color"].as<std::string>("black");
+    auto const hover_color = config["hover-color"].as<std::string>("gray");
+    auto const click_color = config["click-color"].as<std::string>("light-gray");
+    auto const fill_color = config["fill-color"].as<std::string>("white");
+
+    if (not _fonts.contains(font)) {
+        return tl::unexpected("the font " + font + " hasn't been loaded");
+    }
+    if (not _colors.contains(standard_color)) {
+        return tl::unexpected("the color " + standard_color + " hasn't been defined");
+    }
+    if (not _colors.contains(hover_color)) {
+        return tl::unexpected("the color " + hover_color + " hasn't been defined");
+    }
+    if (not _colors.contains(click_color)) {
+        return tl::unexpected("the color " + click_color + " hasn't been defined");
+    }
+    if (not _colors.contains(fill_color)) {
+        return tl::unexpected("the color " + fill_color + " hasn't been defined");
+    }
+
+    return button_factory(_fonts[font], border_width, padding,
+                          _colors[standard_color], _colors[hover_color],
+                          _colors[click_color], _colors[fill_color]);
 }
 }
