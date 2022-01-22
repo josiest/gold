@@ -43,7 +43,7 @@ public:
 
     /** Load fonts from a directory of fonts */
     static result<std::vector<unique_font>>
-        load_all_fonts(std::filesystem::path const & dir);
+        load_all_fonts(std::filesystem::path const & dir, std::uint32_t resolution = 100);
 
     /** Create a button factory from a button config file. */
     static result<button_factory> from_file(std::filesystem::path const & path);

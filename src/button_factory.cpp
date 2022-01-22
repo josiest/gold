@@ -149,8 +149,11 @@ auto _is_font_fxn(std::error_code & ec) {
     };
 }
 // load a font-name, font-pointer pair from a font file
-font_table::value_type _load_as_pair(fs::path const & path) {
-    return std::make_pair(path.stem(), TTF_OpenFont(path.c_str(), 100));
+auto _load_as_pair_with_size(uint resolution) {
+    return [resolution](fs::path const & path) {
+        int const size = static_cast<int>(resolution);
+        return std::make_pair(path.stem(), TTF_OpenFont(path.c_str(), size));
+    };
 }
 // create a unique font pointer from a name-pointer pair
 unique_font _as_unique_font(TTF_Font * font) {
@@ -162,7 +165,7 @@ bool _font_is_null(TTF_Font const * font) {
 }
 
 result<std::vector<unique_font>>
-button_factory::load_all_fonts(fs::path const & dir)
+button_factory::load_all_fonts(fs::path const & dir, uint resolution)
 {
     namespace views = std::views;
     namespace ranges = std::ranges;
@@ -189,7 +192,7 @@ button_factory::load_all_fonts(fs::path const & dir)
     auto is_font = _is_font_fxn(ec);
     auto font_files = paths | views::filter(is_font);
     auto into_table = std::inserter(_fonts, _fonts.end());
-    ranges::transform(font_files, into_table, &_load_as_pair);
+    ranges::transform(font_files, into_table, _load_as_pair_with_size(resolution));
 
     // put all the successfully loaded fonts into a vector of unique pointers
     // the font resources are freed automatically if returning unexpected
