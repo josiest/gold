@@ -3,22 +3,25 @@
 // frameworks and interfaces
 #include <SDL.h>
 #include <SDL_ttf.h>
-#include <yaml-cpp/yaml.h>
-#include <filesystem>   // fs::path, fs::is_regular_file
 #include "gold/widget.hpp" // iwidget_factory
-#include <ranges>
+
+// data types
+#include "gold/button.hpp"
+#include <cstdint> // std::uint32_t
 
 // data structures and resource handlers
 #include <vector>
 #include <memory> // std::unique_ptr
 #include <tl/expected.hpp>
 
-// data types
-#include "gold/button.hpp"
-#include <cstdint> // std::uint32_t
+// algorithms
+#include <ranges>
 
-// i/o
+// i/o and serialization
 #include <sstream>
+#include <filesystem>   // fs::path, fs::is_regular_file
+#include <yaml-cpp/yaml.h>
+#include "gold/yaml_colors.hpp"
 
 // aliases
 using uint = std::uint32_t;
@@ -50,8 +53,9 @@ button_factory::button_factory(
 }
 
 result<iwidget *>
-button_factory::make_widget(SDL_Renderer * renderer, std::string const & text,
-                            SDL_Rect const & bounds)
+button_factory::make_text_widget(SDL_Renderer * renderer,
+                                 std::string const & text,
+                                 SDL_Rect const & bounds)
 {
     // render the text white to get pure color modulation capability
     static SDL_Color const white{0xff, 0xff, 0xff, 0xff};

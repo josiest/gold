@@ -79,22 +79,31 @@ int main()
         return EXIT_FAILURE;
     }
 
-    // create a button factory and make a button
+    // create a button factory to specify how to make buttons
     auto button_maker = au::button_factory::from_file(config_dir/"button.yaml");
     if (not button_maker) {
         std::cout << button_maker.error() << std::endl;
         return EXIT_FAILURE;
     }
-    au::frame button_frame(window, 0, 0, 3*screen_width/5, screen_height, 100, 50);
-    auto expected_button = button_frame.produce_widget(*button_maker, "Click Me!");
 
+    // create a frame to render the buttons in
+    SDL_Rect const frame_bounds{0, 0, 3*screen_width/7, screen_height};
+    auto button_frame = au::frame::from_file(
+            window, frame_bounds, config_dir/"frame.yaml");
+    if (not button_frame) {
+        std::cout << button_frame.error() << std::endl;
+        return EXIT_FAILURE;
+    }
+    auto expected_button = button_frame->produce_text_widget(*button_maker, "Click Me!");
+
+    // add some buttons to the frame
     if (not expected_button) {
         std::cout << expected_button.error() << std::endl;
         return EXIT_FAILURE;
     }
     au::iwidget * simple_button = *expected_button;
 
-    expected_button = button_frame.produce_widget(*button_maker, "Another!");
+    expected_button = button_frame->produce_text_widget(*button_maker, "Another Button!");
     if (not expected_button) {
         std::cout << expected_button.error() << std::endl;
         return EXIT_FAILURE;
@@ -106,7 +115,7 @@ int main()
     auto print_clicked = print_message_fxn(simple_button, simple_message);
     events.subscribe_functor(SDL_MOUSEBUTTONDOWN, print_clicked);
 
-    std::string const another_message = "Another clicked!";
+    std::string const another_message = "Another button clicked!";
     auto print_another = print_message_fxn(another, another_message);
     events.subscribe_functor(SDL_MOUSEBUTTONDOWN, print_another);
 
@@ -118,7 +127,7 @@ int main()
         SDL_RenderClear(window);
 
         // draw all the widgets associated with the frame
-        button_frame.render();
+        button_frame->render();
         SDL_RenderPresent(window);
     }
     return EXIT_SUCCESS;

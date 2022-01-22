@@ -44,7 +44,7 @@ concept widget_factory =
     requires(factory_t & factory, SDL_Renderer * renderer,
              std::string const & text, SDL_Rect const & bounds) {
 
-    { factory.make_widget(renderer, text, bounds) } ->
+    { factory.make_text_widget(renderer, text, bounds) } ->
         std::same_as<result<iwidget *>>;
 };
 }
