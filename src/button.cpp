@@ -87,9 +87,10 @@ SDL_Rect button::_content_bounds() const
     double const resize_ratio =
         max_bounds.h / static_cast<double>(texture_height);
     int const content_width = static_cast<int>(texture_width * resize_ratio);
+    int const content_x = max_bounds.x + (max_bounds.w - content_width)/2;
 
     return {
-        max_bounds.x, max_bounds.y,
+        std::max(max_bounds.x, content_x), max_bounds.y,
         std::min(max_bounds.w, content_width), max_bounds.h
     };
 }
