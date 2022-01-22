@@ -117,9 +117,8 @@ int main()
         SDL_SetRenderDrawColor(window, 0xff, 0xff, 0xff, 0xff);
         SDL_RenderClear(window);
 
-        // draw the button and update the screen
-        simple_button->render(window);
-        another->render(window);
+        // draw all the widgets associated with the frame
+        button_frame.render();
         SDL_RenderPresent(window);
     }
     return EXIT_SUCCESS;

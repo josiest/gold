@@ -25,4 +25,11 @@ frame::frame(SDL_Renderer * renderer, int x, int y, uint w, uint h,
             button_height, padding)
 {
 }
+
+void frame::render()
+{
+    for (auto widget : _widgets) {
+        widget->render(_renderer);
+    }
+}
 }

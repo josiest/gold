@@ -26,13 +26,20 @@ public:
         };
         _next.y += _button_height + _padding;
 
-        return factory.make_widget(_renderer, text, bounds);
+        auto widget = factory.make_widget(_renderer, text, bounds);
+        if (widget) {
+            _widgets.push_back(*widget);
+        }
+        return widget;
     }
+
+    void render();
 private:
     SDL_Renderer * _renderer;
     SDL_Rect _bounds;
     int _button_height;
     int _padding;
     SDL_Point _next;
+    std::vector<iwidget *> _widgets;
 };
 }
