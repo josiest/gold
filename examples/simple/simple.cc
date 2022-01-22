@@ -56,16 +56,21 @@ int main()
     }
 
     // create a basic window, specifying the title and dimensions
-    auto window = ion::hardware_renderer::basic_window("Simple Example", 800, 600);
+    uint const screen_width = 800;
+    uint const screen_height = 600;
+    auto window = ion::hardware_renderer::basic_window(
+            "Simple Example", screen_width, screen_height);
     if (not window) {
         std::cout << window.get_error() << std::endl;
         return EXIT_FAILURE;
     }
 
     // define some colors and fonts
-    auto colors_loaded = au::button_factory::load_colors(config_dir/"colors.yaml");
-    if (not colors_loaded) {
-        std::cout << colors_loaded.error() << std::endl;
+    auto const colors_did_load =
+        au::button_factory::load_colors(config_dir/"colors.yaml");
+
+    if (not colors_did_load) {
+        std::cout << colors_did_load.error() << std::endl;
         return EXIT_FAILURE;
     }
     auto fonts = au::button_factory::load_all_fonts(font_dir);
@@ -74,26 +79,36 @@ int main()
         return EXIT_FAILURE;
     }
 
-    // create the button factory
-    auto buttons = au::button_factory::from_file(config_dir/"button.yaml");
-    if (not buttons) {
-        std::cout << buttons.error() << std::endl;
+    // create a button factory and make a button
+    auto button_maker = au::button_factory::from_file(config_dir/"button.yaml");
+    if (not button_maker) {
+        std::cout << button_maker.error() << std::endl;
         return EXIT_FAILURE;
     }
+    au::frame button_frame(window, 0, 0, 3*screen_width/5, screen_height, 100, 50);
+    auto expected_button = button_frame.produce_widget(*button_maker, "Click Me!");
 
-    // create a button
-    auto expected_button = buttons->make_widget(
-            window, "Click Me!", SDL_Rect{50, 50, 300, 100}
-            );
     if (not expected_button) {
         std::cout << expected_button.error() << std::endl;
         return EXIT_FAILURE;
     }
     au::iwidget * simple_button = *expected_button;
 
+    expected_button = button_frame.produce_widget(*button_maker, "Another!");
+    if (not expected_button) {
+        std::cout << expected_button.error() << std::endl;
+        return EXIT_FAILURE;
+    }
+    au::iwidget * another = *expected_button;
+
     // link sdl click event to this button
-    auto print_clicked = print_message_fxn(simple_button, "clicked!");
+    std::string const simple_message = "Clicked!";
+    auto print_clicked = print_message_fxn(simple_button, simple_message);
     events.subscribe_functor(SDL_MOUSEBUTTONDOWN, print_clicked);
+
+    std::string const another_message = "Another clicked!";
+    auto print_another = print_message_fxn(another, another_message);
+    events.subscribe_functor(SDL_MOUSEBUTTONDOWN, print_another);
 
     while (not ion::input::has_quit()) {
         events.process_queue();
@@ -104,6 +119,7 @@ int main()
 
         // draw the button and update the screen
         simple_button->render(window);
+        another->render(window);
         SDL_RenderPresent(window);
     }
     return EXIT_SUCCESS;

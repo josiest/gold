@@ -61,24 +61,26 @@ button_factory::make_widget(SDL_Renderer * renderer, std::string const & text,
     if (_texts.contains(text)) {
         rendered_text = _texts[text].get();
     }
-    // otherwise render it, convert the surface to a texture
-    // and add it to the resource manager
-    SDL_Surface * text_surface =
-        TTF_RenderText_Solid(_font, text.c_str(), white);
-    if (not text_surface) {
-        return tl::unexpected(TTF_GetError());
-    }
+    else {
+        // otherwise render it, convert the surface to a texture
+        // and add it to the resource manager
+        SDL_Surface * text_surface =
+            TTF_RenderText_Solid(_font, text.c_str(), white);
+        if (not text_surface) {
+            return tl::unexpected(TTF_GetError());
+        }
 
-    rendered_text = SDL_CreateTextureFromSurface(renderer, text_surface);
-    SDL_FreeSurface(text_surface);
-    if (not rendered_text) {
-        return tl::unexpected(SDL_GetError());
-    }
+        rendered_text = SDL_CreateTextureFromSurface(renderer, text_surface);
+        SDL_FreeSurface(text_surface);
+        if (not rendered_text) {
+            return tl::unexpected(SDL_GetError());
+        }
 
-    // two resource managers to add to
-    // 1. the texture resources, since buttons don't own textures
-    // 2. the button resources
-    _texts[text] = unique_texture(rendered_text, sdl_deleter{});
+        // two resource managers to add to
+        // 1. the texture resources, since buttons don't own textures
+        // 2. the button resources
+        _texts[text] = unique_texture(rendered_text, sdl_deleter{});
+    }
     return _buttons.emplace_back(new button(
                 bounds, _border_thickness, _padding,
                 _standard_color, _hover_color, _click_color, _fill_color,
@@ -93,11 +95,16 @@ button_factory::load_colors(fs::path const & path)
 
     // make sure the path exists and is a file
     if (not fs::exists(path, ec) or not fs::is_regular_file(path, ec)) {
-
         std::stringstream message;
-        if (ec) { message << ec.message(); }
-        else if (not fs::exists(path)) { message << path << " doesn't exist"; }
-        else if (not fs::is_regular_file(path)) { message << path << " isn't a file"; }
+        if (ec) { // an os call failed
+            message << ec.message();
+        }
+        else if (not fs::exists(path)) {
+            message << path << "doesn't exist";
+        }
+        else if (not fs::is_regular_file(path)) {
+            message << path << "isn't a file";
+        }
         return tl::unexpected(message.str());
     }
 
@@ -162,8 +169,12 @@ button_factory::load_all_fonts(fs::path const & dir)
     if (not fs::exists(dir, ec) or not fs::is_directory(dir, ec)) {
         std::stringstream message;
         if (ec) { message << ec.message(); } // an os call failed
-        else if (not fs::exists(dir)) { message << dir << " doesn't exist"; }
-        else if (not fs::is_directory(dir)) { message << dir << " isn't a directory"; }
+        else if (not fs::exists(dir)) {
+            message << dir << "doesn't exist";
+        }
+        else if (not fs::is_directory(dir)) {
+            message << dir << "isn't a directory";
+        }
         return tl::unexpected(message.str());
     }
 
