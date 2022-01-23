@@ -55,7 +55,7 @@ void button::render(SDL_Renderer * renderer)
     SDL_RenderFillRect(renderer, &inner_bounds);
 
     // render the button content
-    SDL_Rect const src = _clipped_texture_bounds();
+    SDL_Rect const src = clip_width(_texture_bounds(), _max_content_bounds());
     SDL_Rect const dst = _content_bounds();
     SDL_SetTextureColorMod(_content, draw_color.r, draw_color.g, draw_color.b);
     SDL_RenderCopy(renderer, _content, &src, &dst);
@@ -98,27 +98,11 @@ SDL_Rect button::_content_bounds() const
     };
 }
 
-// get the bounding rect to draw the texture from
-//
-// The bounding rect might not be the full texture if it's too large for the 
-// bounding rect that it should render to. In particular: when scaled to the
-// rendering space by relative height, the texture width should not exceed the
-// bounding width
-SDL_Rect button::_clipped_texture_bounds() const
+SDL_Rect button::_texture_bounds() const
 {
-    // get the bounding rect of the texture
     SDL_Rect texture_bounds{0, 0, 0, 0};
     SDL_QueryTexture(_content, nullptr, nullptr,
                                &texture_bounds.w, &texture_bounds.h);
-
-    // scale the texture rect into rendering space
-    SDL_Rect const max_bounds = _max_content_bounds();
-    double const rendering_scale = scale_by_height(texture_bounds, max_bounds);
-
-    // clip the texture bounds if the scaled texture is too wide
-    if (texture_bounds.w * rendering_scale > max_bounds.w) {
-        texture_bounds.w = static_cast<int>(max_bounds.w/rendering_scale);
-    }
     return texture_bounds;
 }
 

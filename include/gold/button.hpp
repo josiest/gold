@@ -45,6 +45,9 @@ private:
     // get the bounding rect to draw the texture to
     SDL_Rect _content_bounds() const;
 
+    // get the raw bounding rect of the texture
+    SDL_Rect _texture_bounds() const;
+
     // get the bounding rect to draw the texture from
     SDL_Rect _clipped_texture_bounds() const;
 
