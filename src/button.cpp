@@ -82,20 +82,21 @@ SDL_Rect button::_content_bounds() const
 {
     SDL_Rect const max_bounds = _max_content_bounds();
 
-    // normalize the texture height to the max bounds height
-    int texture_width = 0;
-    int texture_height = 0;
-    SDL_QueryTexture(_content, nullptr, nullptr,
-                               &texture_width, &texture_height);
-    double const resize_ratio =
-        max_bounds.h / static_cast<double>(texture_height);
-    int const content_width = static_cast<int>(texture_width * resize_ratio);
-    int const content_x = max_bounds.x + (max_bounds.w - content_width)/2;
+    // scale the texture bounds into rendering space
+    SDL_Rect const texture_bounds = _texture_bounds();
+    double const rendering_scale = scale_by_height(texture_bounds, max_bounds);
 
-    return {
-        std::max(max_bounds.x, content_x), max_bounds.y,
-        std::min(max_bounds.w, content_width), max_bounds.h
-    };
+    SDL_Rect content_bounds(max_bounds);
+    content_bounds.w = static_cast<int>(texture_bounds.w * rendering_scale);
+
+    // center the x position
+    content_bounds.x = max_bounds.x + (max_bounds.w - content_bounds.w)/2;
+
+    // clamp the content bounds to be within the maximum bounds
+    content_bounds.x = std::max(max_bounds.x, content_bounds.x);
+    content_bounds.w = std::min(max_bounds.w, content_bounds.w);
+
+    return content_bounds;
 }
 
 SDL_Rect button::_texture_bounds() const

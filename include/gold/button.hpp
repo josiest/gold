@@ -48,9 +48,6 @@ private:
     // get the raw bounding rect of the texture
     SDL_Rect _texture_bounds() const;
 
-    // get the bounding rect to draw the texture from
-    SDL_Rect _clipped_texture_bounds() const;
-
     // determine if the mouse is in the bounds of this button
     bool _mouse_in_bounds() const;
 
