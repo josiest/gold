@@ -20,6 +20,11 @@ text_field::text_field(SDL_Renderer * renderer, SDL_Rect const & bounds,
 {
 }
 
+void text_field::set_text(std::string const & text)
+{
+    _content.reset(_render_text(text));
+}
+
 void text_field::render(SDL_Renderer * renderer)
 {
     // compute the src and dest rects
