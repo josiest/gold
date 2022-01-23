@@ -12,7 +12,6 @@
 #include <sstream>
 #include <filesystem>
 #include <yaml-cpp/yaml.h>
-#include "gold/yaml_colors.hpp"
 
 // aliases
 using uint = std::uint32_t;

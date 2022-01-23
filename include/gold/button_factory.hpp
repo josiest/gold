@@ -3,7 +3,6 @@
 // frameworks and interfaces
 #include <SDL.h>
 #include <SDL_ttf.h>
-#include <yaml-cpp/yaml.h>
 #include "gold/widget.hpp" // iwidget
 
 // data structures and resource handlers
@@ -15,11 +14,14 @@
 // data types
 #include "gold/button.hpp"
 #include <cstdint>      // std::uint32_t
+
+// i/o and serialization
+#include <yaml-cpp/yaml.h>
 #include <filesystem>   // fs::path
+#include "gold/color_serialization.hpp"
 
 namespace au {
 
-using color_table = std::unordered_map<std::string, SDL_Color>;
 using font_table = std::unordered_map<std::string, TTF_Font *>;
 
 /** A resource manager/factory class for gold buttons. */
@@ -38,8 +40,7 @@ public:
         make_text_widget(SDL_Renderer * renderer, std::string const & text,
                          SDL_Rect const & bounds);
 
-    /** Load color definitions from a yaml file */
-    static result<bool> load_colors(std::filesystem::path const & path);
+    static void update_colors(color_table const & table);
 
     /** Load fonts from a directory of fonts */
     static result<std::vector<unique_font>>

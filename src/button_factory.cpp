@@ -12,16 +12,18 @@
 // data structures and resource handlers
 #include <vector>
 #include <memory> // std::unique_ptr
-#include <tl/expected.hpp>
+#include "gold/result.hpp"
+#include <tl/expected.hpp> // tl::unexpected
 
 // algorithms
-#include <ranges>
+#include <ranges> // ranges::transform, ranges::any_of,
+                  // views:: values, views::filter
 
 // i/o and serialization
 #include <sstream>
-#include <filesystem>   // fs::path, fs::is_regular_file
+#include <filesystem> // fs::path, fs::is_regular_file,
+                      // fs::is_directory
 #include <yaml-cpp/yaml.h>
-#include "gold/yaml_colors.hpp"
 
 // aliases
 using uint = std::uint32_t;
@@ -92,54 +94,11 @@ button_factory::make_text_widget(SDL_Renderer * renderer,
                 )).get();
 }
 
-result<bool>
-button_factory::load_colors(fs::path const & path)
+void button_factory::update_colors(color_table const & table)
 {
-    std::error_code ec; // using error codes tells filesystem not to throw
-
-    // make sure the path exists and is a file
-    if (not fs::exists(path, ec) or not fs::is_regular_file(path, ec)) {
-        std::stringstream message;
-        if (ec) { // an os call failed
-            message << ec.message();
-        }
-        else if (not fs::exists(path)) {
-            message << path << "doesn't exist";
-        }
-        else if (not fs::is_regular_file(path)) {
-            message << path << "isn't a file";
-        }
-        return tl::unexpected(message.str());
+    for (auto const &[name, color] : table) {
+        _colors.insert_or_assign(name, color);
     }
-
-    YAML::Node colors = YAML::LoadFile(path);
-
-    // can't load a map that isn't a map
-    if (not colors.IsMap()) {
-        return tl::unexpected("colors should be defined as a yaml map"s);
-    }
-    for (auto const & item : colors) {
-        // each entry must point to an rgb color sequence
-        if (not item.second.IsSequence() or item.second.size() != 3) {
-            return tl::unexpected("color definitions should have the form [r, g, b]"s);
-        }
-        // each value mus be a scalar
-        for (auto const & val : item.second) {
-            if (not val.IsScalar()) {
-                return tl::unexpected("color definition values should be scalar"s);
-            }
-        }
-        std::string name{""};
-        if (not YAML::convert<std::string>::decode(item.first, name)) {
-            return tl::unexpected("couldn't decode color name!"s);
-        }
-        SDL_Color color{0};
-        if (not YAML::convert<SDL_Color>::decode(item.second, color)) {
-            return tl::unexpected("coldn't decode color!"s);
-        }
-        _colors[name] = color;
-    }
-    return true;
 }
 
 // determine if a path is a valid font file

@@ -66,13 +66,13 @@ int main()
     }
 
     // define some colors and fonts
-    auto const colors_did_load =
-        au::button_factory::load_colors(config_dir/"colors.yaml");
-
-    if (not colors_did_load) {
-        std::cout << colors_did_load.error() << std::endl;
+    auto colors = au::load_colors(config_dir/"colors.yaml");
+    if (not colors) {
+        std::cout << colors.error() << std::endl;
         return EXIT_FAILURE;
     }
+    au::button_factory::update_colors(*colors);
+
     auto fonts = au::button_factory::load_all_fonts(font_dir);
     if (not fonts) {
         std::cout << fonts.error() << std::endl;

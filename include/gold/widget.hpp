@@ -4,13 +4,13 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
-// interfaces
-#include <concepts>
-#include <tl/expected.hpp>
-
 // data types
 #include <string>
 #include <memory> // std::unique_ptr
+
+// templates data-types and concepts
+#include <concepts>
+#include "gold/result.hpp"
 
 namespace au {
 
@@ -23,9 +23,6 @@ struct sdl_deleter {
 // aliases
 using unique_texture = std::unique_ptr<SDL_Texture, sdl_deleter>;
 using unique_font = std::unique_ptr<TTF_Font, sdl_deleter>;
-
-template<typename expected_t>
-using result = tl::expected<expected_t, std::string>;
 
 class iwidget {
 public:

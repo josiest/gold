@@ -1,7 +1,18 @@
 #pragma once
 
-#include <yaml-cpp/yaml.h>
+// frameworks
 #include <SDL.h>
+
+// data types
+#include <string>
+
+// data structures and resource handlers
+#include <unordered_map>
+#include "gold/result.hpp"
+
+// i/o and serialization
+#include <yaml-cpp/yaml.h>
+#include <filesystem>
 
 namespace YAML {
 template<>
@@ -27,4 +38,12 @@ struct convert<SDL_Color> {
         return true;
     }
 };
+}
+
+namespace au {
+using color_table = std::unordered_map<std::string, SDL_Color>;
+
+/** Load color definitions from a yaml file */
+result<color_table> load_colors(std::filesystem::path const & path);
+
 }
