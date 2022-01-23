@@ -10,6 +10,7 @@
 // data types
 #include <cstdint> // std::uint32_t
 #include <tl/expected.hpp>
+#include <string>
 
 // i/o
 #include <iostream>
@@ -19,9 +20,10 @@
 namespace fs = std::filesystem;
 using uint = std::uint32_t;
 
-auto add_to_counter(au::iwidget * button, int & counter, int amt)
+auto add_to_counter(au::iwidget * button, au::text_field & field,
+                    int & counter, int amt)
 {
-    return [button, amt, &counter](SDL_Event const & event) {
+    return [button, amt, &field, &counter](SDL_Event const & event) {
 
         SDL_Rect const bounds = button->bounds();
         int const x = event.button.x;
@@ -31,7 +33,7 @@ auto add_to_counter(au::iwidget * button, int & counter, int amt)
                 && y >= bounds.y && y <= bounds.y + bounds.h) {
 
             counter += amt;
-            std::cout << counter << " clicks" << std::endl;
+            field.set_text(std::to_string(counter) + " clicks");
         }
     };
 }
@@ -134,10 +136,10 @@ int main()
 
     // link some call-backs to the buttons
     int counter = 0;
-    auto add_one = add_to_counter(simple_button, counter, 1);
+    auto add_one = add_to_counter(simple_button, counter_field, counter, 1);
     events.subscribe_functor(SDL_MOUSEBUTTONDOWN, add_one);
 
-    auto add_five = add_to_counter(another, counter, 5);
+    auto add_five = add_to_counter(another, counter_field, counter, 5);
     events.subscribe_functor(SDL_MOUSEBUTTONDOWN, add_five);
 
     while (not ion::input::has_quit()) {
