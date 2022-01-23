@@ -6,6 +6,9 @@
 // data types
 #include <cstdint>
 
+// math
+#include "gold/geometry.hpp"
+
 using uint = std::uint32_t;
 
 namespace au {
@@ -95,25 +98,28 @@ SDL_Rect button::_content_bounds() const
     };
 }
 
+// get the bounding rect to draw the texture from
+//
+// The bounding rect might not be the full texture if it's too large for the 
+// bounding rect that it should render to. In particular: when scaled to the
+// rendering space by relative height, the texture width should not exceed the
+// bounding width
 SDL_Rect button::_clipped_texture_bounds() const
 {
-    SDL_Rect const max_bounds = _max_content_bounds();
-
-    // normalize the texture height to the max bounds height
-    int texture_width = 0;
-    int texture_height = 0;
+    // get the bounding rect of the texture
+    SDL_Rect texture_bounds{0, 0, 0, 0};
     SDL_QueryTexture(_content, nullptr, nullptr,
-                               &texture_width, &texture_height);
-    double const resize_ratio =
-        max_bounds.h / static_cast<double>(texture_height);
+                               &texture_bounds.w, &texture_bounds.h);
 
-    // clip the texture width if it's too long
-    double const content_width = texture_width * resize_ratio;
-    if (content_width > max_bounds.w) {
-        texture_width = static_cast<int>(max_bounds.w/resize_ratio);
+    // scale the texture rect into rendering space
+    SDL_Rect const max_bounds = _max_content_bounds();
+    double const rendering_scale = scale_by_height(texture_bounds, max_bounds);
+
+    // clip the texture bounds if the scaled texture is too wide
+    if (texture_bounds.w * rendering_scale > max_bounds.w) {
+        texture_bounds.w = static_cast<int>(max_bounds.w/rendering_scale);
     }
-
-    return { 0, 0, texture_width, texture_height };
+    return texture_bounds;
 }
 
 bool button::_mouse_in_bounds() const
