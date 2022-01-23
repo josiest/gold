@@ -5,3 +5,4 @@
 #include "gold/button.hpp"
 #include "gold/frame.hpp"
 #include "gold/serialization.hpp"
+#include "gold/monochrome_widget.hpp"

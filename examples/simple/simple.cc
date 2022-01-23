@@ -97,13 +97,19 @@ int main()
     }
     auto expected_button = button_frame->produce_text_widget(*button_maker, "Click Me!");
 
-    // add some buttons to the frame
+    // add a button to the frame
     if (not expected_button) {
         std::cout << expected_button.error() << std::endl;
         return EXIT_FAILURE;
     }
     au::iwidget * simple_button = *expected_button;
 
+    // link sdl click event to this button
+    std::string const simple_message = "Clicked!";
+    auto print_clicked = print_message_fxn(simple_button, simple_message);
+    events.subscribe_functor(SDL_MOUSEBUTTONDOWN, print_clicked);
+
+    // add another button to the frame
     expected_button = button_frame->produce_text_widget(*button_maker, "Another Button!");
     if (not expected_button) {
         std::cout << expected_button.error() << std::endl;
@@ -111,14 +117,40 @@ int main()
     }
     au::iwidget * another = *expected_button;
 
-    // link sdl click event to this button
-    std::string const simple_message = "Clicked!";
-    auto print_clicked = print_message_fxn(simple_button, simple_message);
-    events.subscribe_functor(SDL_MOUSEBUTTONDOWN, print_clicked);
-
+    // and link a call-back when clicked
     std::string const another_message = "Another button clicked!";
     auto print_another = print_message_fxn(another, another_message);
     events.subscribe_functor(SDL_MOUSEBUTTONDOWN, print_another);
+
+    // make a free text field
+    auto font_search = fonts->find("DejaVuSans");
+    if (font_search == fonts->end()) {
+        std::cout << "DejaVu sans hasn't been loaded!" << std::endl;
+        return EXIT_FAILURE;
+    }
+    TTF_Font * dejavu_sans = font_search->second.get();
+
+    SDL_Color const white{0xff, 0xff, 0xff, 0xff};
+    SDL_Surface * text_surface =
+        TTF_RenderText_Solid(dejavu_sans, "Click counter", white);
+
+    if (not text_surface) {
+        std::cout << TTF_GetError() << std::endl;
+        return EXIT_FAILURE;
+    }
+    ion::texture counter_texture(window, SDL_CreateTextureFromSurface(window, text_surface));
+    SDL_FreeSurface(text_surface);
+    if (not counter_texture) {
+        std::cout << counter_texture.get_error();
+    }
+    auto const charcoal_search = colors->find("charcoal");
+    if (charcoal_search == colors->end()) {
+        std::cout << "The color charcoal hasn't been defined!" << std::endl;
+        return EXIT_FAILURE;
+    }
+    SDL_Color const charcoal = charcoal_search->second;
+    SDL_Rect const counter_bounds{200, 200, 400, 60};
+    au::monochrome_widget counter(counter_bounds, charcoal, counter_texture);
 
     while (not ion::input::has_quit()) {
         events.process_queue();
@@ -129,6 +161,7 @@ int main()
 
         // draw all the widgets associated with the frame
         button_frame->render();
+        counter.render(window);
         SDL_RenderPresent(window);
     }
     return EXIT_SUCCESS;
