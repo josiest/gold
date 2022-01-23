@@ -6,23 +6,12 @@
 
 // data types
 #include <string>
-#include <memory> // std::unique_ptr
 
 // templates data-types and concepts
 #include <concepts>
 #include "gold/result.hpp"
 
 namespace au {
-
-// destroy various sdl resources
-struct sdl_deleter {
-    void operator()(SDL_Texture * texture) { SDL_DestroyTexture(texture); }
-    void operator()(TTF_Font * font) { TTF_CloseFont(font); }
-};
-
-// aliases
-using unique_texture = std::unique_ptr<SDL_Texture, sdl_deleter>;
-using unique_font = std::unique_ptr<TTF_Font, sdl_deleter>;
 
 class iwidget {
 public:

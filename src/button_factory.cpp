@@ -101,78 +101,11 @@ void button_factory::update_colors(color_table const & table)
     }
 }
 
-// determine if a path is a valid font file
-auto _is_font_fxn(std::error_code & ec) {
-    return [&ec](fs::path const & path) {
-        return fs::is_regular_file(path, ec) and path.extension() == ".ttf";
-    };
-}
-// load a font-name, font-pointer pair from a font file
-auto _load_as_pair_with_size(uint resolution) {
-    return [resolution](fs::path const & path) {
-        int const size = static_cast<int>(resolution);
-        return std::make_pair(path.stem(), TTF_OpenFont(path.c_str(), size));
-    };
-}
-// create a unique font pointer from a name-pointer pair
-unique_font _as_unique_font(TTF_Font * font) {
-    return unique_font(font, sdl_deleter{});
-}
-// determine if a font pointer is null from a name-pointer pair
-bool _font_is_null(TTF_Font const * font) {
-    return font == nullptr;
-}
-
-result<std::vector<unique_font>>
-button_factory::load_all_fonts(fs::path const & dir, uint resolution)
+void button_factory::update_fonts(font_table const & table)
 {
-    namespace views = std::views;
-    namespace ranges = std::ranges;
-
-    std::error_code ec; // using error codes tells filesystem not to throw
-
-    // make sure the path exists and is a valid directory
-    if (not fs::exists(dir, ec) or not fs::is_directory(dir, ec)) {
-        std::stringstream message;
-        if (ec) { message << ec.message(); } // an os call failed
-        else if (not fs::exists(dir)) {
-            message << dir << "doesn't exist";
-        }
-        else if (not fs::is_directory(dir)) {
-            message << dir << "isn't a directory";
-        }
-        return tl::unexpected(message.str());
+    for (auto &[name, font] : table) {
+        _fonts.insert_or_assign(name, font);
     }
-
-    // recursively get all paths in directory
-    std::vector<fs::path> paths(fs::recursive_directory_iterator(dir, ec), {});
-
-    // filter only font files and load them as name-font pairs
-    auto is_font = _is_font_fxn(ec);
-    auto font_files = paths | views::filter(is_font);
-    auto into_table = std::inserter(_fonts, _fonts.end());
-    ranges::transform(font_files, into_table, _load_as_pair_with_size(resolution));
-
-    // put all the successfully loaded fonts into a vector of unique pointers
-    // the font resources are freed automatically if returning unexpected
-    // otherwise this is the expected result
-    std::vector<unique_font> font_handle;
-    auto into_handle = std::back_inserter(font_handle);
-    auto ttf_fonts = _fonts | views::values;
-    ranges::transform(ttf_fonts, into_handle, &_as_unique_font);
-
-    // abort if any os calls failed in the process
-    // or if some fonts couldn't be loaded
-    bool const loading_failed = ranges::any_of(ttf_fonts, &_font_is_null);
-    if (ec or loading_failed) {
-        std::string message;
-        if (ec) { message = ec.message(); }
-        if (loading_failed) { message = TTF_GetError(); }
-        _fonts.clear(); // clean up
-        return tl::unexpected(message);
-    }
-
-    return font_handle;
 }
 
 result<button_factory> button_factory::from_file(fs::path const & path)

@@ -4,3 +4,4 @@
 #include "gold/button_factory.hpp"
 #include "gold/button.hpp"
 #include "gold/frame.hpp"
+#include "gold/serialization.hpp"

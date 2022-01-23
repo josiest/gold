@@ -73,11 +73,12 @@ int main()
     }
     au::button_factory::update_colors(*colors);
 
-    auto fonts = au::button_factory::load_all_fonts(font_dir);
+    auto fonts = au::load_all_fonts(font_dir);
     if (not fonts) {
         std::cout << fonts.error() << std::endl;
         return EXIT_FAILURE;
     }
+    au::button_factory::update_fonts(au::observe_fonts(*fonts));
 
     // create a button factory to specify how to make buttons
     auto button_maker = au::button_factory::from_file(config_dir/"button.yaml");

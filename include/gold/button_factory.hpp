@@ -8,7 +8,6 @@
 // data structures and resource handlers
 #include <vector>
 #include <unordered_map>
-#include <memory> // std::unique_ptr
 #include <tl/expected.hpp>
 
 // data types
@@ -18,11 +17,9 @@
 // i/o and serialization
 #include <yaml-cpp/yaml.h>
 #include <filesystem>   // fs::path
-#include "gold/color_serialization.hpp"
+#include "gold/serialization.hpp"
 
 namespace au {
-
-using font_table = std::unordered_map<std::string, TTF_Font *>;
 
 /** A resource manager/factory class for gold buttons. */
 class button_factory {
@@ -40,11 +37,11 @@ public:
         make_text_widget(SDL_Renderer * renderer, std::string const & text,
                          SDL_Rect const & bounds);
 
+    /** Add color definitions to the button factory. */
     static void update_colors(color_table const & table);
 
-    /** Load fonts from a directory of fonts */
-    static result<std::vector<unique_font>>
-        load_all_fonts(std::filesystem::path const & dir, std::uint32_t resolution = 100);
+    /** Add font definitions to the button factory. */
+    static void update_fonts(font_table const & fonts);
 
     /** Create a button factory from a button config file. */
     static result<button_factory> from_file(std::filesystem::path const & path);
