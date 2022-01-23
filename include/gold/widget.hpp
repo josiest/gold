@@ -24,6 +24,28 @@ public:
     virtual ~iwidget() {}
 };
 
+class imonochrome {
+public:
+    /** Get the color of this object */
+    virtual SDL_Color get_color() const = 0;
+
+    /** Set the color of this object */
+    virtual void set_color(SDL_Color const & color) = 0;
+
+    virtual ~imonochrome() {}
+};
+
+class itext_widget : public iwidget {
+public:
+    /** Get the text associated with this widget. */
+    virtual std::string get_text() const = 0;
+
+    /** Set the text associated with this widget. */
+    virtual void set_text(std::string const & text) = 0;
+
+    virtual ~itext_widget() {}
+};
+
 template<class factory_t>
 concept widget_factory =
 
