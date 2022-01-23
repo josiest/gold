@@ -19,18 +19,19 @@
 namespace fs = std::filesystem;
 using uint = std::uint32_t;
 
-auto print_message_fxn(au::iwidget * widget, std::string const & message)
+auto add_to_counter(au::iwidget * button, int & counter, int amt)
 {
-    return [widget, &message](SDL_Event const & event) {
+    return [button, amt, &counter](SDL_Event const & event) {
 
-        SDL_Rect const bounds = widget->bounds();
+        SDL_Rect const bounds = button->bounds();
         int const x = event.button.x;
         int const y = event.button.y;
 
         if (x >= bounds.x && x <= bounds.x + bounds.w
                 && y >= bounds.y && y <= bounds.y + bounds.h) {
 
-            std::cout << message << std::endl;
+            counter += amt;
+            std::cout << counter << " clicks" << std::endl;
         }
     };
 }
@@ -97,30 +98,19 @@ int main()
     }
     auto expected_button = button_frame->produce_text_widget(*button_maker, "Click Me!");
 
-    // add a button to the frame
+    // add some buttons to the frame
     if (not expected_button) {
         std::cout << expected_button.error() << std::endl;
         return EXIT_FAILURE;
     }
     au::iwidget * simple_button = *expected_button;
 
-    // link sdl click event to this button
-    std::string const simple_message = "Clicked!";
-    auto print_clicked = print_message_fxn(simple_button, simple_message);
-    events.subscribe_functor(SDL_MOUSEBUTTONDOWN, print_clicked);
-
-    // add another button to the frame
     expected_button = button_frame->produce_text_widget(*button_maker, "Another Button!");
     if (not expected_button) {
         std::cout << expected_button.error() << std::endl;
         return EXIT_FAILURE;
     }
     au::iwidget * another = *expected_button;
-
-    // and link a call-back when clicked
-    std::string const another_message = "Another button clicked!";
-    auto print_another = print_message_fxn(another, another_message);
-    events.subscribe_functor(SDL_MOUSEBUTTONDOWN, print_another);
 
     // get references to the font and color used for the text field
     auto font_search = fonts->find("DejaVuSans");
@@ -140,7 +130,15 @@ int main()
     // create the text field
     SDL_Rect const counter_bounds{200, 200, 400, 60};
     std::string const text = "Click counter";
-    au::text_field counter(window, counter_bounds, dejavu_sans, charcoal, text);
+    au::text_field counter_field(window, counter_bounds, dejavu_sans, charcoal, text);
+
+    // link some call-backs to the buttons
+    int counter = 0;
+    auto add_one = add_to_counter(simple_button, counter, 1);
+    events.subscribe_functor(SDL_MOUSEBUTTONDOWN, add_one);
+
+    auto add_five = add_to_counter(another, counter, 5);
+    events.subscribe_functor(SDL_MOUSEBUTTONDOWN, add_five);
 
     while (not ion::input::has_quit()) {
         events.process_queue();
@@ -151,7 +149,7 @@ int main()
 
         // draw all the widgets associated with the frame
         button_frame->render();
-        counter.render(window);
+        counter_field.render(window);
         SDL_RenderPresent(window);
     }
     return EXIT_SUCCESS;
