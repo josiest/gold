@@ -6,3 +6,4 @@
 #include "gold/frame.hpp"
 #include "gold/serialization.hpp"
 #include "gold/text_field.hpp"
+#include "gold/geometry.hpp"

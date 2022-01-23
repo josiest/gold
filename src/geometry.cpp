@@ -2,6 +2,11 @@
 
 namespace au {
 
+bool within_closed_bounds(SDL_Point const & p, SDL_Rect const & rect)
+{
+    return p.x >= rect.x and p.x <= rect.x + rect.w
+        and p.y >= rect.y and p.y <= rect.y + rect.h;
+}
 double scale_by_height(SDL_Rect const & from, SDL_Rect const & to)
 {
     // scale width by normalizing the rect height to the max height

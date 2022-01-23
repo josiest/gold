@@ -12,7 +12,7 @@
 
 namespace au {
 
-class button : public iwidget {
+class button : public itext_widget {
 public:
     button() = delete;
 
@@ -29,6 +29,9 @@ public:
     // interface methods
     inline SDL_Rect bounds() const { return _bounds; }
     void render(SDL_Renderer * renderer);
+
+    inline std::string get_text() const { return _text; }
+    void set_text(std::string const & text);
 private:
     SDL_Renderer * _renderer;
     SDL_Rect _bounds;

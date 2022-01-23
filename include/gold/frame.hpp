@@ -20,17 +20,20 @@ public:
     frame(SDL_Renderer * renderer, int x, int y, std::uint32_t w, std::uint32_t h,
           std::uint32_t button_height, std::uint32_t padding);
 
-    result<iwidget *> produce_text_widget(widget_factory auto & factory,
-                                          std::string const & text)
+    result<itext_widget *> produce_text_widget(text_widget_factory auto & factory,
+                                               std::string const & text)
     {
+        // compute the widget bounds with frame padding
         SDL_Rect const bounds{
             _next.x, _next.y, _bounds.w - 2*_padding, _button_height
         };
         _next.y += _button_height + _padding;
 
-        auto widget = factory.make_text_widget(_renderer, text, bounds);
+        // produce the widget from the factory and add it if it succesffuly initialized
+        result<itext_widget *> widget =
+            factory.make_text_widget(_renderer, text, bounds);
         if (widget) {
-            _widgets.push_back(*widget);
+            _widgets.push_back(dynamic_cast<iwidget *>(*widget));
         }
         return widget;
     }

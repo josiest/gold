@@ -33,7 +33,7 @@ public:
                    SDL_Color const & click_color, SDL_Color const & fill_color);
 
     /** Make a new widget */
-    result<iwidget *>
+    result<itext_widget *>
         make_text_widget(SDL_Renderer * renderer, std::string const & text,
                          SDL_Rect const & bounds);
 

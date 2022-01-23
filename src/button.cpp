@@ -63,6 +63,12 @@ void button::render(SDL_Renderer * renderer)
     SDL_RenderCopy(renderer, _content.get(), &src, &dst);
 }
 
+void button::set_text(std::string const & text)
+{
+    _text = text;
+    _content.reset(_render_text(text));
+}
+
 SDL_Texture * button::_render_text(std::string const & text)
 {
     // render the text as a surface

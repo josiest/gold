@@ -5,6 +5,9 @@
 
 namespace au {
 
+/** Determine if a point is within closed bounds of a rect. */
+bool within_closed_bounds(SDL_Point const & p, SDL_Rect const & rect);
+
 /** Calculate the height ratio of one rect to another.
  *
  * \param from the rect that would be scaled from

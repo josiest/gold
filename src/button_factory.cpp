@@ -54,7 +54,7 @@ button_factory::button_factory(
 {
 }
 
-result<iwidget *>
+result<itext_widget *>
 button_factory::make_text_widget(SDL_Renderer * renderer,
                                  std::string const & text,
                                  SDL_Rect const & bounds)
@@ -70,7 +70,7 @@ button_factory::make_text_widget(SDL_Renderer * renderer,
     }
 
     // add the button to the owned resources and return an observer
-    auto observer = dynamic_cast<iwidget *>(text_widget.get());
+    auto observer = dynamic_cast<itext_widget *>(text_widget.get());
     _buttons.push_back(std::move(text_widget));
     return observer;
 }

@@ -26,14 +26,34 @@ auto add_to_counter(au::iwidget * button, au::text_field & field,
     return [button, amt, &field, &counter](SDL_Event const & event) {
 
         SDL_Rect const bounds = button->bounds();
-        int const x = event.button.x;
-        int const y = event.button.y;
+        SDL_Point const mouse{event.button.x, event.button.y};
 
-        if (x >= bounds.x && x <= bounds.x + bounds.w
-                && y >= bounds.y && y <= bounds.y + bounds.h) {
-
+        if (au::within_closed_bounds(mouse, bounds)) {
             counter += amt;
             field.set_text(std::to_string(counter) + " clicks");
+        }
+    };
+}
+
+auto set_button_text(au::iwidget * click_button, au::itext_widget * text_button,
+                     std::string const original)
+{
+    return [click_button, text_button, &original](SDL_Event const & event) {
+
+        SDL_Rect const bounds = click_button->bounds();
+        SDL_Point const mouse{event.button.x, event.button.y};
+
+        std::string const alakazam = "Alakazam!";
+        if (au::within_closed_bounds(mouse, bounds)) {
+
+            // change the button text to alkazam if it isn't already
+            if (text_button->get_text() != alakazam) {
+                text_button->set_text(alakazam);
+            }
+            // otherwise change back to original text
+            else {
+                text_button->set_text(original);
+            }
         }
     };
 }
@@ -105,14 +125,15 @@ int main()
         std::cout << expected_button.error() << std::endl;
         return EXIT_FAILURE;
     }
-    au::iwidget * simple_button = *expected_button;
+    au::itext_widget * simple_button = *expected_button;
 
-    expected_button = button_frame->produce_text_widget(*button_maker, "Another Button!");
+    std::string const another_text = "Another Button!";
+    expected_button = button_frame->produce_text_widget(*button_maker, another_text);
     if (not expected_button) {
         std::cout << expected_button.error() << std::endl;
         return EXIT_FAILURE;
     }
-    au::iwidget * another = *expected_button;
+    au::itext_widget * another = *expected_button;
 
     // get references to the font and color used for the text field
     auto font_search = fonts->find("DejaVuSans");
@@ -132,15 +153,17 @@ int main()
     // create the text field
     SDL_Rect const counter_bounds{200, 200, 400, 60};
     std::string const text = "Click counter";
-    au::text_field counter_field(window, counter_bounds, dejavu_sans, charcoal, text);
+    au::text_field counter_field(
+            window, counter_bounds, dejavu_sans, charcoal, text);
 
     // link some call-backs to the buttons
     int counter = 0;
     auto add_one = add_to_counter(simple_button, counter_field, counter, 1);
     events.subscribe_functor(SDL_MOUSEBUTTONDOWN, add_one);
 
-    auto add_five = add_to_counter(another, counter_field, counter, 5);
-    events.subscribe_functor(SDL_MOUSEBUTTONDOWN, add_five);
+    auto alakazam = set_button_text(
+            dynamic_cast<au::iwidget *>(another), another, another_text);
+    events.subscribe_functor(SDL_MOUSEBUTTONDOWN, alakazam);
 
     while (not ion::input::has_quit()) {
         events.process_queue();
