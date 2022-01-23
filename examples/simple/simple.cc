@@ -122,7 +122,7 @@ int main()
     auto print_another = print_message_fxn(another, another_message);
     events.subscribe_functor(SDL_MOUSEBUTTONDOWN, print_another);
 
-    // make a free text field
+    // get references to the font and color used for the text field
     auto font_search = fonts->find("DejaVuSans");
     if (font_search == fonts->end()) {
         std::cout << "DejaVu sans hasn't been loaded!" << std::endl;
@@ -130,27 +130,17 @@ int main()
     }
     TTF_Font * dejavu_sans = font_search->second.get();
 
-    SDL_Color const white{0xff, 0xff, 0xff, 0xff};
-    SDL_Surface * text_surface =
-        TTF_RenderText_Solid(dejavu_sans, "Click counter", white);
-
-    if (not text_surface) {
-        std::cout << TTF_GetError() << std::endl;
-        return EXIT_FAILURE;
-    }
-    ion::texture counter_texture(window, SDL_CreateTextureFromSurface(window, text_surface));
-    SDL_FreeSurface(text_surface);
-    if (not counter_texture) {
-        std::cout << counter_texture.get_error();
-    }
     auto const charcoal_search = colors->find("charcoal");
     if (charcoal_search == colors->end()) {
         std::cout << "The color charcoal hasn't been defined!" << std::endl;
         return EXIT_FAILURE;
     }
     SDL_Color const charcoal = charcoal_search->second;
+
+    // create the text field
     SDL_Rect const counter_bounds{200, 200, 400, 60};
-    au::monochrome_widget counter(counter_bounds, charcoal, counter_texture);
+    std::string const text = "Click counter";
+    au::text_field counter(window, counter_bounds, dejavu_sans, charcoal, text);
 
     while (not ion::input::has_quit()) {
         events.process_queue();
