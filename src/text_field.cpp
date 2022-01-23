@@ -16,12 +16,14 @@ text_field::text_field(SDL_Renderer * renderer, SDL_Rect const & bounds,
                        std::string const & text)
 
     : _renderer(renderer), _bounds(bounds), _font(font),
-      _text_color(text_color), _content(_render_text(text), sdl_deleter{})
+      _text_color(text_color), _text(text),
+      _content(_render_text(text), sdl_deleter{})
 {
 }
 
 void text_field::set_text(std::string const & text)
 {
+    _text = text;
     _content.reset(_render_text(text));
 }
 
