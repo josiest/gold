@@ -13,21 +13,22 @@ using uint = std::uint32_t;
 
 namespace au {
 
-button::button(SDL_Rect const & bounds, uint border_thickness, uint padding,
+button::button(SDL_Renderer * renderer, SDL_Rect const & bounds,
+               uint border_thickness, uint padding,
 
                SDL_Color const & standard_color, SDL_Color const & hover_color,
                SDL_Color const & click_color, SDL_Color const & fill_color,
 
-               SDL_Texture * content)
+               TTF_Font * font, std::string const & text)
 
-    : _bounds(bounds),
+    : _renderer(renderer), _bounds(bounds),
       _border_thickness(static_cast<int>(border_thickness)),
       _padding(static_cast<int>(padding)),
 
       _standard_color(standard_color), _hover_color(hover_color),
       _click_color(click_color), _fill_color(fill_color),
 
-      _content(content)
+      _font(font), _text(text), _content(_render_text(text))
 {
 }
 
@@ -57,8 +58,28 @@ void button::render(SDL_Renderer * renderer)
     // render the button content
     SDL_Rect const src = clip_width(_texture_bounds(), _max_content_bounds());
     SDL_Rect const dst = _content_bounds();
-    SDL_SetTextureColorMod(_content, draw_color.r, draw_color.g, draw_color.b);
-    SDL_RenderCopy(renderer, _content, &src, &dst);
+    SDL_SetTextureColorMod(
+            _content.get(), draw_color.r, draw_color.g, draw_color.b);
+    SDL_RenderCopy(renderer, _content.get(), &src, &dst);
+}
+
+SDL_Texture * button::_render_text(std::string const & text)
+{
+    // render the text as a surface
+    static SDL_Color constexpr white{0xff, 0xff, 0xff, 0xff};
+    SDL_Surface * text_surface =
+        TTF_RenderText_Solid(_font, text.c_str(), white);
+    if (not text_surface) {
+        return nullptr;
+    }
+
+    // convert it to a texture
+    SDL_Texture * rendered_text =
+        SDL_CreateTextureFromSurface(_renderer, text_surface);
+
+    // the texture has been copied, so no need for the surface
+    SDL_FreeSurface(text_surface);
+    return rendered_text;
 }
 
 SDL_Rect button::_inner_bounds() const
@@ -102,8 +123,8 @@ SDL_Rect button::_content_bounds() const
 SDL_Rect button::_texture_bounds() const
 {
     SDL_Rect texture_bounds{0, 0, 0, 0};
-    SDL_QueryTexture(_content, nullptr, nullptr,
-                               &texture_bounds.w, &texture_bounds.h);
+    SDL_QueryTexture(_content.get(), nullptr, nullptr,
+                                     &texture_bounds.w, &texture_bounds.h);
     return texture_bounds;
 }
 

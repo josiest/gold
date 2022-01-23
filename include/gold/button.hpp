@@ -3,6 +3,9 @@
 // frameworks
 #include <SDL.h>
 
+// resource handlers
+#include "gold/serialization.hpp" // unqiue_texture
+
 // data types
 #include "gold/widget.hpp"
 #include <cstdint>
@@ -13,18 +16,21 @@ class button : public iwidget {
 public:
     button() = delete;
 
-    button(SDL_Rect const & bounds,
+    button(SDL_Renderer * renderer, SDL_Rect const & bounds,
            std::uint32_t border_thickness, std::uint32_t padding,
 
            SDL_Color const & standard_color, SDL_Color const & hover_color,
            SDL_Color const & click_color, SDL_Color const & fill_color,
 
-           SDL_Texture * content);
+           TTF_Font * font, std::string const & text);
+
+    inline bool operator !() const { return not _content; }
 
     // interface methods
     inline SDL_Rect bounds() const { return _bounds; }
     void render(SDL_Renderer * renderer);
 private:
+    SDL_Renderer * _renderer;
     SDL_Rect _bounds;
     int _border_thickness;
     int _padding;
@@ -34,7 +40,12 @@ private:
     SDL_Color _click_color;
     SDL_Color _fill_color;
 
-    SDL_Texture * _content;
+    TTF_Font * _font;
+    std::string _text;
+    unique_texture _content;
+
+    // render text using the object's font
+    SDL_Texture * _render_text(std::string const & text);
 
     // get the bounding rect of the button inside the border
     SDL_Rect _inner_bounds() const;

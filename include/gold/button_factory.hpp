@@ -53,7 +53,6 @@ private:
 
     // the factory owns all button and texture resources it creates
     std::vector<std::unique_ptr<button>> _buttons;
-    std::unordered_map<std::string, unique_texture> _texts;
 
     // button configuration
     TTF_Font * _font;
