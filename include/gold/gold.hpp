@@ -8,3 +8,4 @@
 #include "gold/text_factory.hpp"
 #include "gold/geometry.hpp"
 #include "gold/serialization.hpp"
+#include "gold/events.hpp"

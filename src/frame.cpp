@@ -15,6 +15,9 @@
 
 #include <ranges>
 
+// DEBUG
+#include <iostream>
+
 // aliases
 using uint = std::uint32_t;
 namespace fs = std::filesystem;
@@ -41,6 +44,7 @@ frame::frame(SDL_Renderer * renderer, int x, int y, uint w, uint h,
 
 void frame::render()
 {
+    if (not _active) { return; }
     for (auto widget : _widgets) {
         widget->render(_renderer);
     }
