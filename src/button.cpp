@@ -5,6 +5,7 @@
 
 // data types
 #include <cstdint>
+#include <cstddef> // std::size_t
 
 // math
 #include "gold/geometry.hpp"
@@ -12,6 +13,8 @@
 using uint = std::uint32_t;
 
 namespace au {
+
+std::size_t button::_next_id = 0;
 
 button::button(SDL_Renderer * renderer, SDL_Rect const & bounds,
                uint border_thickness, uint padding,
@@ -21,7 +24,7 @@ button::button(SDL_Renderer * renderer, SDL_Rect const & bounds,
 
                TTF_Font * font, std::string const & text)
 
-    : _renderer(renderer), _bounds(bounds),
+    : _id(_seed ^ _next_id++), _renderer(renderer), _bounds(bounds),
       _border_thickness(static_cast<int>(border_thickness)),
       _padding(static_cast<int>(padding)),
 

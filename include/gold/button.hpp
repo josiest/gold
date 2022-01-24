@@ -30,6 +30,7 @@ public:
     inline SDL_Rect bounds() const { return _bounds; }
     void render(SDL_Renderer * renderer);
 
+    inline std::size_t id() const { return _id; }
     inline bool is_active() const { return _active; }
     void activate() { _active = true; }
     void deactivate() { _active = false; }
@@ -37,6 +38,10 @@ public:
     inline std::string get_text() const { return _text; }
     void set_text(std::string const & text);
 private:
+    static std::size_t constexpr _seed = 7878831530993720721u;
+    static std::size_t _next_id;
+
+    std::size_t const _id;
     SDL_Renderer * _renderer;
     SDL_Rect _bounds;
     int _border_thickness;

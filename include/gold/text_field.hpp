@@ -28,6 +28,7 @@ public:
     inline SDL_Rect bounds() const { return _bounds; }
     void render(SDL_Renderer * renderer);
 
+    inline std::size_t id() const { return _id; }
     inline bool is_active() const { return _active; }
     inline void activate() { _active = true; }
     inline void deactivate() { _active = false; }
@@ -39,6 +40,10 @@ public:
     inline SDL_Color get_color() const { return _text_color; }
     void set_color(SDL_Color const & color) { _text_color = color; }
 private:
+    static std::size_t constexpr _seed = 6058471859535223437u;
+    static std::size_t _next_id;
+
+    std::size_t const _id;
     SDL_Renderer * _renderer;
     SDL_Rect _bounds;
     TTF_Font * _font;

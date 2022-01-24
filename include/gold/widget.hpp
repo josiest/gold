@@ -5,6 +5,8 @@
 #include <SDL_ttf.h>
 
 // data types
+#include <cstdint>
+#include <cstddef> // std::size_t
 #include <string>
 
 // templates data-types and concepts
@@ -32,6 +34,9 @@ public:
 
     /** Deactivate this widget. */
     virtual void deactivate() = 0;
+
+    /** Get the id of this widget. */
+    virtual std::size_t id() const = 0;
 
     virtual ~iwidget() {}
 };

@@ -3,22 +3,28 @@
 // frameworks
 #include <SDL.h>
 
-// math
-#include "gold/geometry.hpp"
+// data types
+#include <cstdint>
+#include <cstddef> // std::size_t
 
 // resource_handlers
 #include "gold/serialization.hpp"
 
+// math
+#include "gold/geometry.hpp"
+#include <cstdlib> // std::rand
+
 namespace au {
+
+std::size_t text_field::_next_id = 0;
 
 text_field::text_field(SDL_Renderer * renderer, SDL_Rect const & bounds,
                        TTF_Font * font, SDL_Color const & text_color,
                        std::string const & text)
 
-    : _renderer(renderer), _bounds(bounds), _font(font),
-      _text_color(text_color), _text(text),
-      _content(_render_text(text), sdl_deleter{}),
-      _active(true)
+    : _id(_seed ^ _next_id++), _renderer(renderer), _bounds(bounds),
+      _font(font), _text_color(text_color), _text(text),
+      _content(_render_text(text), sdl_deleter{}), _active(true)
 {
 }
 
