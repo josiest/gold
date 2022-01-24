@@ -80,7 +80,7 @@ int main()
 
     // create a basic window, specifying the title and dimensions
     uint const screen_width = 800;
-    uint const screen_height = 600;
+    uint const screen_height = 200;
     auto window = ion::hardware_renderer::basic_window(
             "Simple Example", screen_width, screen_height);
     if (not window) {
@@ -111,29 +111,28 @@ int main()
     }
 
     // create a frame to render the buttons in
-    SDL_Rect const frame_bounds{0, 0, 3*screen_width/7, screen_height};
-    auto button_frame = au::frame::from_file(
-            window, frame_bounds, config_dir/"frame.yaml");
+    auto button_frame =
+        au::frame::from_file(window, config_dir/"button-frame.yaml");
     if (not button_frame) {
         std::cout << button_frame.error() << std::endl;
         return EXIT_FAILURE;
     }
-    auto expected_button = button_frame->produce_text_widget(*button_maker, "Click Me!");
 
     // add some buttons to the frame
-    if (not expected_button) {
-        std::cout << expected_button.error() << std::endl;
+    auto simple_button = button_frame->produce_text_widget(
+            *button_maker, "Click Me!");
+    if (not simple_button) {
+        std::cout << simple_button.error() << std::endl;
         return EXIT_FAILURE;
     }
-    au::itext_widget * simple_button = *expected_button;
 
     std::string const another_text = "Another Button!";
-    expected_button = button_frame->produce_text_widget(*button_maker, another_text);
-    if (not expected_button) {
-        std::cout << expected_button.error() << std::endl;
+    auto another = button_frame->produce_text_widget(
+            *button_maker, another_text);
+    if (not another) {
+        std::cout << another.error() << std::endl;
         return EXIT_FAILURE;
     }
-    au::itext_widget * another = *expected_button;
 
     // create a factory object to create text fields
     au::text_factory::update_fonts(au::observe_fonts(*fonts));
@@ -145,11 +144,8 @@ int main()
     }
 
     // create a frame to render the text field in
-    SDL_Rect const textframe_bounds{
-        2*screen_width/7, 5*screen_height/8, 4*screen_width/7, screen_height
-    };
-    auto text_frame = au::frame::from_file(
-            window, textframe_bounds, config_dir/"frame.yaml");
+    auto text_frame =
+        au::frame::from_file(window, config_dir/"text-frame.yaml");
     if (not text_frame) {
         std::cout << text_frame.error() << std::endl;
         return EXIT_FAILURE;
@@ -166,12 +162,12 @@ int main()
 
     // link some call-backs to the buttons
     int counter = 0;
-    auto add_one = add_to_counter(dynamic_cast<au::iwidget *>(simple_button),
+    auto add_one = add_to_counter(dynamic_cast<au::iwidget *>(*simple_button),
                                   counter_field, counter, 1);
     events.subscribe_functor(SDL_MOUSEBUTTONDOWN, add_one);
 
-    auto alakazam = set_button_text(dynamic_cast<au::iwidget *>(another),
-                                    another, another_text);
+    auto alakazam = set_button_text(dynamic_cast<au::iwidget *>(*another),
+                                    *another, another_text);
     events.subscribe_functor(SDL_MOUSEBUTTONDOWN, alakazam);
 
     while (not ion::input::has_quit()) {

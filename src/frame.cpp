@@ -42,8 +42,7 @@ void frame::render()
     }
 }
 
-result<frame> frame::from_file(SDL_Renderer * renderer, SDL_Rect const & bounds,
-                               fs::path const & path)
+result<frame> frame::from_file(SDL_Renderer * renderer, fs::path const & path)
 {
     // check that the path is valid
     std::error_code ec;
@@ -69,14 +68,46 @@ result<frame> frame::from_file(SDL_Renderer * renderer, SDL_Rect const & bounds,
         return tl::unexpected("frame config should have a yaml map format"s);
     }
 
-    // make sure the button-height attribute exists and is a number
-    if (not config["button-height"]) {
-        return tl::unexpected("A button-height attribute must be specified"s);
+    // make sure the appropriate attribute exists in the right format
+    if (not config["widget-height"]) {
+        return tl::unexpected("A widget-height attribute must be specified"s);
     }
-    if (not config["button-height"].IsScalar()) {
-        return tl::unexpected("The button-heght attribute must be a scalar value"s);
+    if (not config["widget-height"].IsScalar()) {
+        return tl::unexpected("The widget-height attribute must be a scalar value"s);
     }
-    int const height = config["button-height"].as<int>();
+    int const height = config["widget-height"].as<int>();
+
+    if (not config["x"]) {
+        return tl::unexpected("An x attribute must be specified"s);
+    }
+    if (not config["x"].IsScalar()) {
+        return tl::unexpected("The x attribute must be a scalar value"s);
+    }
+    int const x = config["x"].as<int>();
+
+    if (not config["y"]) {
+        return tl::unexpected("A y attribute must be specified"s);
+    }
+    if (not config["y"].IsScalar()) {
+        return tl::unexpected("The y attribute must be a scalar value"s);
+    }
+    int const y = config["y"].as<int>();
+
+    if (not config["width"]) {
+        return tl::unexpected("A width attribute must be specified"s);
+    }
+    if (not config["width"].IsScalar()) {
+        return tl::unexpected("The width attribute must be a scalar value"s);
+    }
+    int const w = config["width"].as<int>();
+
+    if (not config["height"]) {
+        return tl::unexpected("A height attribute must be specified"s);
+    }
+    if (not config["height"].IsScalar()) {
+        return tl::unexpected("The height attribute must be a scalar value"s);
+    }
+    int const h = config["height"].as<int>();
 
     // make sure that the padding attribute is a number if it exists
     if (config["padding"] and not config["padding"].IsScalar()) {
@@ -84,6 +115,6 @@ result<frame> frame::from_file(SDL_Renderer * renderer, SDL_Rect const & bounds,
     }
     int const padding = config["padding"].as<int>();
 
-    return frame(renderer, bounds, height, padding);
+    return frame(renderer, SDL_Rect{x, y, w, h}, height, padding);
 }
 }

@@ -41,7 +41,6 @@ public:
     void render();
 
     static result<frame> from_file(SDL_Renderer * renderer,
-                                   SDL_Rect const & bounds,
                                    std::filesystem::path const & path);
 private:
     SDL_Renderer * _renderer;
