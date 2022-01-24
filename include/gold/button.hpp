@@ -32,7 +32,7 @@ public:
 
     inline bool is_active() const { return _active; }
     void activate() { _active = true; }
-    void deactivate() { _active = true; }
+    void deactivate() { _active = false; }
 
     inline std::string get_text() const { return _text; }
     void set_text(std::string const & text);

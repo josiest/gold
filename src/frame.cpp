@@ -48,16 +48,20 @@ void frame::render()
 
 void frame::activate()
 {
+    if (_active) { return; }
     for (auto widget : _widgets) {
         widget->activate();
     }
+    _active = true;
 }
 
 void frame::deactivate()
 {
+    if (not _active) { return; }
     for (auto widget : _widgets) {
         widget->deactivate();
     }
+    _active = false;
 }
 
 result<frame> frame::from_file(SDL_Renderer * renderer, fs::path const & path)

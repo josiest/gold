@@ -64,6 +64,23 @@ auto set_button_text(au::iwidget * click_button, au::itext_widget * text_button,
     };
 }
 
+auto activate_frame(au::iwidget * click_button, au::frame & frame, bool activate)
+{
+    return [click_button, activate, &frame](SDL_Event const & event) {
+
+        // don't do anything if button is deactivated
+        if (not click_button->is_active()) { return; }
+
+        SDL_Rect const bounds = click_button->bounds();
+        SDL_Point const mouse{event.button.x, event.button.y};
+
+        if (au::within_closed_bounds(mouse, bounds)) {
+            if (activate) { frame.activate(); }
+            else { frame.deactivate(); }
+        }
+    };
+}
+
 int main()
 {
 
@@ -86,7 +103,7 @@ int main()
 
     // create a basic window, specifying the title and dimensions
     uint const screen_width = 800;
-    uint const screen_height = 300;
+    uint const screen_height = 260;
     auto window = ion::hardware_renderer::basic_window(
             "Simple Example", screen_width, screen_height);
     if (not window) {
@@ -140,10 +157,10 @@ int main()
         return EXIT_FAILURE;
     }
 
-    auto deactivate = button_frame->produce_text_widget(
+    auto deactivate_button = button_frame->produce_text_widget(
             *button_maker, "Deactivate");
-    if (not deactivate) {
-        std::cout << deactivate.error() << std::endl;
+    if (not deactivate_button) {
+        std::cout << deactivate_button.error() << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -173,15 +190,38 @@ int main()
     }
     au::itext_widget * counter_field = *expected_counter;
 
+    // add the activate button to the text frame
+    auto activate_button = text_frame->produce_text_widget(
+            *button_maker, "Activate");
+    if (not activate_button) {
+        std::cout << activate_button.error() << std::endl;
+        return EXIT_FAILURE;
+    }
+
     // link some call-backs to the buttons
+
+    // increase the counter every time the simple button is clicked
     int counter = 0;
     auto add_one = add_to_counter(dynamic_cast<au::iwidget *>(*simple_button),
                                   counter_field, counter, 1);
     events.subscribe_functor(SDL_MOUSEBUTTONDOWN, add_one);
 
+    // flip the rendered text every time another button is clicked
     auto alakazam = set_button_text(dynamic_cast<au::iwidget *>(*another),
                                     *another, another_text);
     events.subscribe_functor(SDL_MOUSEBUTTONDOWN, alakazam);
+
+    // deactivate the button frame when the deactivate button is clicked
+    auto set_active =
+        activate_frame(dynamic_cast<au::iwidget *>(*activate_button),
+                       *button_frame, true);
+    events.subscribe_functor(SDL_MOUSEBUTTONDOWN, set_active);
+
+    // activate the button frame when the activate button is clicked
+    auto set_not_active =
+        activate_frame(dynamic_cast<au::iwidget *>(*deactivate_button),
+                       *button_frame, false);
+    events.subscribe_functor(SDL_MOUSEBUTTONDOWN, set_not_active);
 
     while (not ion::input::has_quit()) {
         events.process_queue();

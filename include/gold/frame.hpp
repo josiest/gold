@@ -50,8 +50,8 @@ public:
                                    std::filesystem::path const & path);
 
     inline bool is_active() const { return _active; }
-    inline void activate();
-    inline void deactivate();
+    void activate();
+    void deactivate();
 private:
     SDL_Renderer * _renderer;
     SDL_Rect _bounds;
