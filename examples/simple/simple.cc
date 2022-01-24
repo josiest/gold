@@ -20,17 +20,17 @@
 namespace fs = std::filesystem;
 using uint = std::uint32_t;
 
-auto add_to_counter(au::iwidget * button, au::text_field & field,
+auto add_to_counter(au::iwidget * button, au::itext_widget * field,
                     int & counter, int amt)
 {
-    return [button, amt, &field, &counter](SDL_Event const & event) {
+    return [button, field, amt, &counter](SDL_Event const & event) {
 
         SDL_Rect const bounds = button->bounds();
         SDL_Point const mouse{event.button.x, event.button.y};
 
         if (au::within_closed_bounds(mouse, bounds)) {
             counter += amt;
-            field.set_text(std::to_string(counter) + " clicks");
+            field->set_text(std::to_string(counter) + " clicks");
         }
     };
 }
@@ -135,34 +135,43 @@ int main()
     }
     au::itext_widget * another = *expected_button;
 
-    // get references to the font and color used for the text field
-    auto font_search = fonts->find("DejaVuSans");
-    if (font_search == fonts->end()) {
-        std::cout << "DejaVu sans hasn't been loaded!" << std::endl;
+    // create a factory object to create text fields
+    au::text_factory::update_fonts(au::observe_fonts(*fonts));
+    au::text_factory::update_colors(*colors);
+    auto text_maker = au::text_factory::from_file(config_dir/"text.yaml");
+    if (not text_maker) {
+        std::cout << text_maker.error() << std::endl;
         return EXIT_FAILURE;
     }
-    TTF_Font * dejavu_sans = font_search->second.get();
 
-    auto const charcoal_search = colors->find("charcoal");
-    if (charcoal_search == colors->end()) {
-        std::cout << "The color charcoal hasn't been defined!" << std::endl;
+    // create a frame to render the text field in
+    SDL_Rect const textframe_bounds{
+        2*screen_width/7, 5*screen_height/8, 4*screen_width/7, screen_height
+    };
+    auto text_frame = au::frame::from_file(
+            window, textframe_bounds, config_dir/"frame.yaml");
+    if (not text_frame) {
+        std::cout << text_frame.error() << std::endl;
         return EXIT_FAILURE;
     }
-    SDL_Color const charcoal = charcoal_search->second;
 
-    // create the text field
-    SDL_Rect const counter_bounds{200, 200, 400, 60};
-    std::string const text = "Click counter";
-    au::text_field counter_field(
-            window, counter_bounds, dejavu_sans, charcoal, text);
+    // add the counter text to the frame
+    auto expected_counter =
+        text_frame->produce_text_widget(*text_maker, "Click counter");
+    if (not expected_counter) {
+        std::cout << expected_counter.error() << std::endl;
+        return EXIT_FAILURE;
+    }
+    au::itext_widget * counter_field = *expected_counter;
 
     // link some call-backs to the buttons
     int counter = 0;
-    auto add_one = add_to_counter(simple_button, counter_field, counter, 1);
+    auto add_one = add_to_counter(dynamic_cast<au::iwidget *>(simple_button),
+                                  counter_field, counter, 1);
     events.subscribe_functor(SDL_MOUSEBUTTONDOWN, add_one);
 
-    auto alakazam = set_button_text(
-            dynamic_cast<au::iwidget *>(another), another, another_text);
+    auto alakazam = set_button_text(dynamic_cast<au::iwidget *>(another),
+                                    another, another_text);
     events.subscribe_functor(SDL_MOUSEBUTTONDOWN, alakazam);
 
     while (not ion::input::has_quit()) {
@@ -174,7 +183,7 @@ int main()
 
         // draw all the widgets associated with the frame
         button_frame->render();
-        counter_field.render(window);
+        text_frame->render();
         SDL_RenderPresent(window);
     }
     return EXIT_SUCCESS;

@@ -42,12 +42,16 @@ void text_field::render(SDL_Renderer * renderer)
 SDL_Texture * text_field::_render_text(std::string const & text)
 {
     // make sure the font and renderer exist
-    if (not _font or not _renderer) { return nullptr; }
+    if (not _font or not _renderer) { 
+        return nullptr;
+    }
 
     // render the text and convert it to a texture
     SDL_Color const white{0xff, 0xff, 0xff, 0xff};
     SDL_Surface * text_surface = TTF_RenderText_Solid(_font, text.c_str(), white);
-    if (not text_surface) { return nullptr; }
+    if (not text_surface) {
+        return nullptr;
+    }
     SDL_Texture * rendered_text =
         SDL_CreateTextureFromSurface(_renderer, text_surface);
 

@@ -51,7 +51,7 @@ private:
     static color_table _colors;
     static font_table _fonts;
 
-    // the factory owns all button and texture resources it creates
+    // the factory owns all button resources it creates
     std::vector<std::unique_ptr<button>> _buttons;
 
     // button configuration

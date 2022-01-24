@@ -19,6 +19,9 @@ public:
                TTF_Font * font, SDL_Color const & text_color,
                std::string const & text);
 
+    /** Determine if this text field can be rendered. */
+    inline bool operator !() const { return not _content; }
+
     // interface methods
 
     // text_widget

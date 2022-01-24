@@ -66,7 +66,7 @@ button_factory::make_text_widget(SDL_Renderer * renderer,
             _font, text);
 
     if (not *text_widget) {
-        return tl::unexpected("unable to render text"s);
+        return tl::unexpected("unable to render button"s);
     }
 
     // add the button to the owned resources and return an observer
