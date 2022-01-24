@@ -28,12 +28,16 @@ button::button(SDL_Renderer * renderer, SDL_Rect const & bounds,
       _standard_color(standard_color), _hover_color(hover_color),
       _click_color(click_color), _fill_color(fill_color),
 
-      _font(font), _text(text), _content(_render_text(text))
+      _font(font), _text(text), _content(_render_text(text)),
+      _active(true)
 {
 }
 
 void button::render(SDL_Renderer * renderer)
 {
+    // dont render if not active
+    if (not _active) { return; }
+
     // set the respective border color and content texture
     // based on the mouse position
     SDL_Color draw_color = _standard_color;

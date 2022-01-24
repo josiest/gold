@@ -17,7 +17,8 @@ text_field::text_field(SDL_Renderer * renderer, SDL_Rect const & bounds,
 
     : _renderer(renderer), _bounds(bounds), _font(font),
       _text_color(text_color), _text(text),
-      _content(_render_text(text), sdl_deleter{})
+      _content(_render_text(text), sdl_deleter{}),
+      _active(true)
 {
 }
 
@@ -29,6 +30,9 @@ void text_field::set_text(std::string const & text)
 
 void text_field::render(SDL_Renderer * renderer)
 {
+    // don't render if not active
+    if (not _active) { return; }
+
     // compute the src and dest rects
     SDL_Rect const src = clip_width(_texture_bounds(), _bounds);
     SDL_Rect const dst = _content_bounds();

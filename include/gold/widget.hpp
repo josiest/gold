@@ -21,6 +21,18 @@ public:
     /** Render this widget. */
     virtual void render(SDL_Renderer * renderer) = 0;
 
+    /** Determine if this widget is active. */
+    virtual bool is_active() const = 0;
+
+    /** Activate this widget.
+     *
+     * Widgets are intialized as active.
+     */
+    virtual void activate() = 0;
+
+    /** Deactivate this widget. */
+    virtual void deactivate() = 0;
+
     virtual ~iwidget() {}
 };
 

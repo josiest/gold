@@ -38,10 +38,20 @@ public:
         return widget;
     }
 
+    /** Render all widgets in the frame. */
     void render();
 
+    /** Load a frame from a configuration file.
+     *
+     * \param renderer used to render widgets in the frame
+     * \param path the yaml configuration file
+     */
     static result<frame> from_file(SDL_Renderer * renderer,
                                    std::filesystem::path const & path);
+
+    inline bool is_active() const { return _active; }
+    inline void activate();
+    inline void deactivate();
 private:
     SDL_Renderer * _renderer;
     SDL_Rect _bounds;
@@ -49,5 +59,6 @@ private:
     int _padding;
     SDL_Point _next;
     std::vector<iwidget *> _widgets;
+    bool _active;
 };
 }

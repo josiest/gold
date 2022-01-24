@@ -30,6 +30,10 @@ public:
     inline SDL_Rect bounds() const { return _bounds; }
     void render(SDL_Renderer * renderer);
 
+    inline bool is_active() const { return _active; }
+    void activate() { _active = true; }
+    void deactivate() { _active = true; }
+
     inline std::string get_text() const { return _text; }
     void set_text(std::string const & text);
 private:
@@ -46,6 +50,7 @@ private:
     TTF_Font * _font;
     std::string _text;
     unique_texture _content;
+    bool _active;
 
     // render text using the object's font
     SDL_Texture * _render_text(std::string const & text);

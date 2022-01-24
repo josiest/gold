@@ -25,6 +25,9 @@ auto add_to_counter(au::iwidget * button, au::itext_widget * field,
 {
     return [button, field, amt, &counter](SDL_Event const & event) {
 
+        // don't do anything if the button clicked isn't active
+        if (not button->is_active()) { return; }
+
         SDL_Rect const bounds = button->bounds();
         SDL_Point const mouse{event.button.x, event.button.y};
 
@@ -39,6 +42,9 @@ auto set_button_text(au::iwidget * click_button, au::itext_widget * text_button,
                      std::string const original)
 {
     return [click_button, text_button, &original](SDL_Event const & event) {
+
+        // don't do anything if the button clicked isn't active
+        if (not click_button->is_active()) { return; }
 
         SDL_Rect const bounds = click_button->bounds();
         SDL_Point const mouse{event.button.x, event.button.y};
@@ -80,7 +86,7 @@ int main()
 
     // create a basic window, specifying the title and dimensions
     uint const screen_width = 800;
-    uint const screen_height = 200;
+    uint const screen_height = 300;
     auto window = ion::hardware_renderer::basic_window(
             "Simple Example", screen_width, screen_height);
     if (not window) {
@@ -131,6 +137,13 @@ int main()
             *button_maker, another_text);
     if (not another) {
         std::cout << another.error() << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    auto deactivate = button_frame->produce_text_widget(
+            *button_maker, "Deactivate");
+    if (not deactivate) {
+        std::cout << deactivate.error() << std::endl;
         return EXIT_FAILURE;
     }
 

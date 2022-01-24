@@ -13,9 +13,12 @@
 #include <filesystem>
 #include <yaml-cpp/yaml.h>
 
+#include <ranges>
+
 // aliases
 using uint = std::uint32_t;
 namespace fs = std::filesystem;
+namespace ranges = std::ranges;
 using namespace std::string_literals;
 
 namespace au {
@@ -25,7 +28,8 @@ frame::frame(SDL_Renderer * renderer, SDL_Rect const & bounds,
     : _renderer(renderer), _bounds(bounds),
       _button_height(static_cast<int>(button_height)),
       _padding(static_cast<int>(padding)),
-      _next{bounds.x + _padding, bounds.y + _padding}
+      _next{bounds.x + _padding, bounds.y + _padding},
+      _active(true)
 {
 }
 frame::frame(SDL_Renderer * renderer, int x, int y, uint w, uint h,
@@ -39,6 +43,20 @@ void frame::render()
 {
     for (auto widget : _widgets) {
         widget->render(_renderer);
+    }
+}
+
+void frame::activate()
+{
+    for (auto widget : _widgets) {
+        widget->activate();
+    }
+}
+
+void frame::deactivate()
+{
+    for (auto widget : _widgets) {
+        widget->deactivate();
     }
 }
 
