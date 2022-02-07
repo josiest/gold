@@ -72,4 +72,12 @@ concept text_widget_factory =
     { factory.make_text_widget(renderer, text, bounds) } ->
         std::same_as<result<itext_widget *>>;
 };
+
+template<class widget_subclass>
+    requires std::derived_from<widget_subclass, iwidget>
+
+iwidget * as_widget(widget_subclass * widget)
+{
+    return dynamic_cast<iwidget *>(widget);
+}
 }

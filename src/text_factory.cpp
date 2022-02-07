@@ -14,6 +14,7 @@
 
 // algorithms
 #include <ranges>
+#include <algorithm>
 
 // i/o and serialization
 #include <filesystem>

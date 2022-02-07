@@ -9,6 +9,7 @@
 
 // algorithms
 #include <ranges>
+#include <algorithm>
 
 // i/o and serialization
 #include <sstream>
@@ -121,7 +122,7 @@ load_all_fonts(fs::path const & dir, uint resolution)
 
     unique_font_table table;
     auto into_table = std::inserter(table, table.end());
-    ranges::transform(font_files, into_table, _load_as_pair_with_size(resolution));
+    views::transform(font_files, into_table, _load_as_pair_with_size(resolution));
 
     // abort if any os calls failed in the process
     // or if some fonts couldn't be loaded
