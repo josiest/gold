@@ -1,8 +1,4 @@
 window:
   name: UI Example
-  width: 640
-  height: 480
-
-opengl:
-  major-version: 4
-  minor-version: 2
+  width: 1280
+  height: 720
