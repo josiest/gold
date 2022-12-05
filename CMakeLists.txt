@@ -12,4 +12,7 @@ set_target_properties(sketch PROPERTIES
     CXX_STANDARD_REQUIRED TRUE)
 
 find_package(ion 0.12.0 EXACT REQUIRED PATHS lib/cmake)
-target_link_libraries(sketch PRIVATE ion::ion)
+find_package(EnTT REQUIRED)
+target_link_libraries(sketch
+    PRIVATE ion::ion
+    INTERFACE EnTT::EnTT)

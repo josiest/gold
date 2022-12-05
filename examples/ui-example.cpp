@@ -2,11 +2,11 @@
 #include "ion/system.hpp"
 #include "ion/ui.hpp"
 #include <SDL2/SDL.h>
+#include <entt/entity/registry.hpp>
 
 // data types and structure
 #include <string>
 #include <vector>
-#include <unordered_map>
 
 // serialization and i/o
 #include <yaml-cpp/yaml.h>
@@ -29,6 +29,95 @@ void print_error(std::string const & message) {
     std::cout << message << "\n\n";
 }
 
+namespace gold {
+namespace just {
+/** Horizontal justification setting */
+enum class horizontal {
+    left,   /** Widget should be left-justified */
+    right,  /** Widget should be right-justified */
+    center, /** Widget should be centered horizontally */
+    fill    /** Widget should horizontally fill its layout */
+};
+/** Vertical justification setting */
+enum class vertical {
+    top,    /** Widget should be anchored to the top */
+    bottom, /** Widget should be anchored to the bottom */
+    center, /** Widget should be centered vertically */
+    fill    /** Widget should vertically fill its layout */
+};
+}
+/** A widget will render with the desired size. */
+struct size {
+    float width = 0.f;
+    float height = 0.f;
+
+    [[nodiscard]] constexpr ImVec2 vector() const;
+};
+
+/** A widget will render with the desired color. */
+struct background_color {
+    float red = 0.f;
+    float green = 0.f;
+    float blue = 0.f;
+    float alpha = 1.f;
+
+    [[nodiscard]] constexpr ImVec4 vector() const;
+};
+
+void render(entt::registry & widgets, entt::entity widget);
+}
+constexpr ImVec2 gold::size::vector() const
+{
+    return ImVec2{ width, height };
+}
+constexpr ImVec4 gold::background_color::vector() const
+{
+    return ImVec4{ red, green, blue, alpha };
+}
+void gold::render(entt::registry & widgets, entt::entity widget)
+{
+    auto const * color = widgets.try_get<gold::background_color>(widget);
+    if (color) {
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, color->vector());
+    }
+    auto const id = std::to_string(static_cast<std::uint32_t>(widget));
+    if (auto const * size = widgets.try_get<gold::size>(widget)) {
+        auto desired_size = size->vector();
+        if (auto const * hjust =
+                widgets.try_get<gold::just::horizontal>(widget)) {
+
+            float const avail_width = ImGui::GetContentRegionAvail().x;
+            float const cursor_x = ImGui::GetCursorPosX();
+            float x_offset = 0.f;
+
+            switch (*hjust) {
+                case gold::just::horizontal::right:
+                    x_offset = avail_width - size->width;
+                    ImGui::SetCursorPosX(cursor_x + x_offset);
+                    break;
+                case gold::just::horizontal::center:
+                    x_offset = (avail_width - size->width)/2.f;
+                    ImGui::SetCursorPosX(cursor_x +  x_offset);
+                    break;
+                case gold::just::horizontal::fill:
+                    desired_size.x = 0.f;
+                    break;
+                case gold::just::horizontal::left:
+                default:
+                    break;
+            }
+        }
+        ImGui::BeginChild(id.c_str(), desired_size);
+    }
+    else {
+        ImGui::BeginChild(id.c_str());
+    }
+    ImGui::EndChild();
+    if (color) {
+        ImGui::PopStyleColor();
+    }
+}
+
 namespace global {
 bool show_demo = false;
 }
@@ -42,19 +131,25 @@ void render(SDL_Window *)
         ImGui::End();
         return;
     }
+    static entt::registry widgets;
+    static auto const square = widgets.create();
+    static bool has_init = false;
+    if (not has_init) {
+        widgets.emplace<gold::background_color>(
+            square, 0.429f, 0.160f, 0.480f, 0.540f);
+        widgets.emplace<gold::size>(square, 100.f, 100.f);
+        namespace just = gold::just;
+        widgets.emplace<just::horizontal>(square, just::horizontal::center);
+        has_init = true;
+    }
 
     // draw example widget centered
-    ImVec4 const lavender{0.429f, 0.160f, 0.480f, 0.540f};
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, lavender);
+    widgets.each([](auto widget) { gold::render(widgets, widget); });
 
-    ImVec2 const size{ 100.f, 100.f };
-    float const avail_width = ImGui::GetContentRegionAvail().x;
-    float const x_offset = (avail_width - size.x)/2.f;
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() +  x_offset);
-
-    ImGui::BeginChild("example widget", size);
-    ImGui::EndChild();
-    ImGui::PopStyleColor();
+    // center the widget
+    // float const avail_width = ImGui::GetContentRegionAvail().x;
+    // float const x_offset = (avail_width - size.x)/2.f;
+    // ImGui::SetCursorPosX(ImGui::GetCursorPosX() +  x_offset);
 
     ImGui::End();
 }
