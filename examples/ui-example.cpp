@@ -10,8 +10,9 @@
 
 // serialization and i/o
 #include <yaml-cpp/yaml.h>
-#include <filesystem>
 #include <iostream>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 // type constraints and algorithms
 #include <concepts>
@@ -21,10 +22,9 @@ namespace ranges = std::ranges;
 namespace views = std::views;
 
 namespace paths {
-static std::filesystem::path const assets =
-    std::filesystem::canonical("../assets");
-
-static std::filesystem::path const system_config = assets/"system.yaml";
+static fs::path const assets = fs::canonical("assets");
+static fs::path const system_config = assets/"system.yaml";
+static fs::path const widget_config = assets/"widget.yaml";
 }
 void print_error(std::string const & message) {
     std::cout << message << "\n\n";
@@ -298,21 +298,17 @@ void render(SDL_Window *)
     static bool has_init = false;
     if (not has_init) {
         std::vector<YAML::Exception> errors;
+        auto const config = YAML::LoadFile(paths::widget_config.string());
 
-        YAML::Node const halign_config{"center"};
-        YAML::Node const valign_config{"fill"};
-
-        auto halign = align::horizontal::left;
-        konbu::read(halign_config, halign, errors);
-
-        auto valign = align::vertical::top;
-        konbu::read(valign_config, valign, errors);
-
+        gold::layout layout;
+        if (auto const layout_config = config["layout"]) {
+            konbu::read(layout_config, layout, errors);
+        }
         widgets.emplace<gold::background_color>(
             square, 0.429f, 0.160f, 0.480f, 0.540f);
         widgets.emplace<gold::size>(square, 100.f, 100.f);
-        widgets.emplace<align::horizontal>(square, halign);
-        widgets.emplace<align::vertical>(square, valign);
+        widgets.emplace<align::horizontal>(square, layout.horizontal);
+        widgets.emplace<align::vertical>(square, layout.vertical);
         has_init = true;
     }
 
