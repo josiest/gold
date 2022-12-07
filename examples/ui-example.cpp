@@ -37,12 +37,31 @@ void print_error(std::string const & message) {
 }
 namespace global {
 bool show_demo = false;
+bool show_editor = false;
+}
+
+namespace ImGui {
+void ShowEditorWindow(bool * is_open)
+{
+    ImGui::WindowView window_params;
+    window_params.id = "Widget Editor";
+    window_params.is_open = is_open;
+    window_params.position = { 500.f, 50.f };
+
+    if (not ImGui::NewWindow(window_params)) {
+        ImGui::End();
+    }
+    ImGui::End();
+}
 }
 
 void render(SDL_Window *)
 {
     if (global::show_demo) {
         ImGui::ShowDemoWindow(&global::show_demo);
+    }
+    if (global::show_editor) {
+        ImGui::ShowEditorWindow(&global::show_editor);
     }
     if (not ImGui::NewWindow()) {
         ImGui::End();
@@ -103,6 +122,17 @@ void toggle_demo(SDL_Keysym const & sym)
     }
 }
 
+void toggle_editor(SDL_Keysym const & sym)
+{
+    auto constexpr editor_mask = KMOD_CTRL;
+    bool const can_toggle = mask_contains<editor_mask>(sym.mod) and
+                            has_mask<KMOD_CTRL>(sym.mod);
+
+    if (sym.sym == SDLK_e and can_toggle) {
+        global::show_editor = not global::show_editor;
+    }
+}
+
 int main()
 {
     std::vector<YAML::Exception> yaml_errors;
@@ -117,6 +147,7 @@ int main()
 
     system->on_render().connect<&render>();
     system->on_keydown().connect<&toggle_demo>();
+    system->on_keydown().connect<&toggle_editor>();
     system->start();
     return EXIT_SUCCESS;
 }
