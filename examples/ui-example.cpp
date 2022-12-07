@@ -40,8 +40,28 @@ bool show_demo = false;
 bool show_editor = false;
 }
 
+namespace gold {
+struct editor {
+    entt::registry widgets;
+    entt::entity selected_widget = entt::null;
+};
+}
+
 namespace ImGui {
-void ShowEditorWindow(bool * is_open)
+void ShowHorizontalAlignOptions(entt::registry & widgets, entt::entity widget)
+{
+    auto & selected_option = widgets
+        .get_or_emplace<align::horizontal>(widget, align::horizontal::left);
+    for (int i = 0; i < 4; ++i) {
+        align::horizontal option{ i };
+        if (ImGui::Selectable(gold::to_string(option).c_str(),
+                              option == selected_option)) {
+            selected_option = option;
+        }
+    }
+}
+
+void ShowEditorWindow(bool * is_open, gold::editor & editor)
 {
     ImGui::WindowView window_params;
     window_params.id = "Widget Editor";
@@ -50,50 +70,53 @@ void ShowEditorWindow(bool * is_open)
 
     if (not ImGui::NewWindow(window_params)) {
         ImGui::End();
+        return;
     }
+    ShowHorizontalAlignOptions(editor.widgets, editor.selected_widget);
     ImGui::End();
 }
 }
 
+entt::entity make_square(entt::registry & widgets)
+{
+    std::vector<YAML::Exception> errors;
+    auto const config = YAML::LoadFile(paths::widget_config.string());
+
+    gold::layout layout;
+    if (auto const layout_config = config["layout"]) {
+        konbu::read(layout_config, layout, errors);
+    }
+    auto const square = widgets.create();
+    widgets.emplace<gold::background_color>(
+        square, 0.429f, 0.160f, 0.480f, 0.540f);
+    widgets.emplace<gold::size>(square, 100.f, 100.f);
+    widgets.emplace<align::horizontal>(square, layout.horizontal);
+    widgets.emplace<align::vertical>(square, layout.vertical);
+    return square;
+}
+
 void render(SDL_Window *)
 {
+    static gold::editor editor;
+    static bool has_init = false;
+    if (not has_init) {
+        editor.selected_widget = make_square(editor.widgets);
+        has_init = true;
+    }
     if (global::show_demo) {
         ImGui::ShowDemoWindow(&global::show_demo);
     }
     if (global::show_editor) {
-        ImGui::ShowEditorWindow(&global::show_editor);
+        ImGui::ShowEditorWindow(&global::show_editor, editor);
     }
     if (not ImGui::NewWindow()) {
         ImGui::End();
         return;
     }
-    static entt::registry widgets;
-    static auto const square = widgets.create();
-    static bool has_init = false;
-    if (not has_init) {
-        std::vector<YAML::Exception> errors;
-        auto const config = YAML::LoadFile(paths::widget_config.string());
-
-        gold::layout layout;
-        if (auto const layout_config = config["layout"]) {
-            konbu::read(layout_config, layout, errors);
-        }
-        widgets.emplace<gold::background_color>(
-            square, 0.429f, 0.160f, 0.480f, 0.540f);
-        widgets.emplace<gold::size>(square, 100.f, 100.f);
-        widgets.emplace<align::horizontal>(square, layout.horizontal);
-        widgets.emplace<align::vertical>(square, layout.vertical);
-        has_init = true;
-    }
-
     // draw example widget centered
-    widgets.each([](auto widget) { gold::render(widgets, widget); });
-
-    // center the widget
-    // float const avail_width = ImGui::GetContentRegionAvail().x;
-    // float const x_offset = (avail_width - size.x)/2.f;
-    // ImGui::SetCursorPosX(ImGui::GetCursorPosX() +  x_offset);
-
+    editor.widgets.each([](auto widget) {
+        gold::render(editor.widgets, widget);
+    });
     ImGui::End();
 }
 
