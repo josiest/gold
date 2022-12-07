@@ -6,6 +6,58 @@
 #include "imgui/imgui.h"
 #include <entt/entity/registry.hpp>
 
+namespace align = gold::align;
+void gold::align_cursor(gold::size size, align::horizontal halign,
+                        ImVec2 & desired_size)
+{
+    float const avail_width = ImGui::GetContentRegionAvail().x;
+    float const cursor_x = ImGui::GetCursorPosX();
+    float x_offset;
+
+    switch (halign) {
+    case align::horizontal::right:
+        x_offset = avail_width - size.width;
+        ImGui::SetCursorPosX(cursor_x + x_offset);
+        break;
+    case align::horizontal::center:
+        x_offset = (avail_width - size.width)/2.f;
+        ImGui::SetCursorPosX(cursor_x + x_offset);
+        break;
+    case align::horizontal::fill:
+        desired_size.x = 0.f;
+        break;
+    case align::horizontal::left:
+    default:
+        break;
+    }
+}
+void gold::align_cursor(gold::size size, align::vertical valign,
+                        ImVec2 & desired_size)
+{
+    float const avail_height = ImGui::GetContentRegionAvail().y;
+    float const cursor_y = ImGui::GetCursorPosY();
+    float y_offset;
+
+    switch (valign) {
+    case align::vertical::bottom:
+        y_offset = avail_height - size.height;
+        // TODO: be careful with the cursor!! (maybe use a push fn instead?)
+        ImGui::SetCursorPosY(cursor_y + y_offset);
+        break;
+    case align::vertical::center:
+        y_offset = (avail_height - size.height)/2.f;
+        // TODO: be careful with the cursor!! (maybe use a push fn instead?)
+        ImGui::SetCursorPosY(cursor_y + y_offset);
+        break;
+    case align::vertical::fill:
+        desired_size.y = 0.f;
+        break;
+    case align::vertical::top:
+    default:
+        break;
+    }
+}
+
 void gold::render(entt::registry & widgets, entt::entity widget)
 {
     auto const * color = widgets.try_get<gold::background_color>(widget);
@@ -16,51 +68,10 @@ void gold::render(entt::registry & widgets, entt::entity widget)
     if (auto const * size = widgets.try_get<gold::size>(widget)) {
         auto desired_size = size->vector();
         if (auto const * halign = widgets.try_get<align::horizontal>(widget)) {
-
-            float const avail_width = ImGui::GetContentRegionAvail().x;
-            float const cursor_x = ImGui::GetCursorPosX();
-            float x_offset;
-
-            switch (*halign) {
-                case align::horizontal::right:
-                    x_offset = avail_width - size->width;
-                    ImGui::SetCursorPosX(cursor_x + x_offset);
-                    break;
-                case align::horizontal::center:
-                    x_offset = (avail_width - size->width)/2.f;
-                    ImGui::SetCursorPosX(cursor_x +  x_offset);
-                    break;
-                case align::horizontal::fill:
-                    desired_size.x = 0.f;
-                    break;
-                case align::horizontal::left:
-                default:
-                    break;
-            }
+            align_cursor(*size, *halign, desired_size);
         }
         if (auto const * valign = widgets.try_get<align::vertical>(widget)) {
-            float const avail_height = ImGui::GetContentRegionAvail().y;
-            float const cursor_y = ImGui::GetCursorPosY();
-            float y_offset;
-
-            switch (*valign) {
-                case align::vertical::bottom:
-                    y_offset = avail_height - size->height;
-                    // TODO: be careful with the cursor!! (maybe use a push fn instead?)
-                    ImGui::SetCursorPosY(cursor_y + y_offset);
-                    break;
-                case align::vertical::center:
-                    y_offset = (avail_height - size->height)/2.f;
-                    // TODO: be careful with the cursor!! (maybe use a push fn instead?)
-                    ImGui::SetCursorPosY(cursor_y + y_offset);
-                    break;
-                case align::vertical::fill:
-                    desired_size.y = 0.f;
-                    break;
-                case align::vertical::top:
-                default:
-                    break;
-            }
+            align_cursor(*size, *valign, desired_size);
         }
         ImGui::BeginChild(id.c_str(), desired_size);
     }

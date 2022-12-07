@@ -3,7 +3,7 @@
 
 namespace gold {
 
-/** A widget will render with the desired color. */
+/** A widget will align_cursor with the desired color. */
 struct background_color {
     float red = 0.f;
     float green = 0.f;

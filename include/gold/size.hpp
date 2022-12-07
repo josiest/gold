@@ -2,7 +2,7 @@
 #include "imgui/imgui.h"
 
 namespace gold {
-/** A widget will render with the desired size. */
+/** A widget will align_cursor with the desired size. */
 struct size {
     float width = 0.f;
     float height = 0.f;
