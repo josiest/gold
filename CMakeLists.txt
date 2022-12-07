@@ -2,14 +2,18 @@ cmake_minimum_required(VERSION 3.23) # FILESETS
 project(gold VERSION 0.2.0)
 
 add_library(gold STATIC
-    src/layout.cpp)
+    src/layout.cpp
+    src/render.cpp)
 target_sources(gold PUBLIC
     FILE_SET HEADERS
     BASE_DIRS include
     FILES
     include/gold/layout.hpp
+    include/gold/layout.tcc
+    include/gold/background_color.hpp
+    include/gold/size.hpp
     include/gold/utility.hpp
-    include/gold/layout.tcc)
+    include/gold/render.hpp)
 set_target_properties(gold PROPERTIES
     CXX_STANDARD 23
     CXX_STANDARD_REQUIRED TRUE)
