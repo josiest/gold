@@ -13,7 +13,8 @@
 #include <filesystem>
 #include <iostream>
 
-// algorithms
+// type constraints and algorithms
+#include <concepts>
 #include <ranges>
 #include <algorithm>
 namespace ranges = std::ranges;
@@ -30,15 +31,15 @@ void print_error(std::string const & message) {
 }
 
 namespace gold {
-namespace just {
-/** Horizontal justification setting */
+namespace align {
+/** Horizontal alignment setting */
 enum class horizontal {
-    left,   /** Widget should be left-justified */
-    right,  /** Widget should be right-justified */
+    left,   /** Widget should be left-aligned */
+    right,  /** Widget should be right-aligned */
     center, /** Widget should be centered horizontally */
     fill    /** Widget should horizontally fill its layout */
 };
-/** Vertical justification setting */
+/** Vertical alignment setting */
 enum class vertical {
     top,    /** Widget should be anchored to the top */
     bottom, /** Widget should be anchored to the bottom */
@@ -46,6 +47,50 @@ enum class vertical {
     fill    /** Widget should vertically fill its layout */
 };
 }
+
+std::string to_string(align::horizontal const & horz) {
+    using namemap = std::unordered_map<align::horizontal, std::string>;
+    static namemap const names{
+        { align::horizontal::left,   "left" },
+        { align::horizontal::right,  "right" },
+        { align::horizontal::center, "center" },
+        { align::horizontal::fill,   "fill" }
+    };
+    return names.find(horz)->second;
+}
+
+std::string to_string(align::vertical const & vert) {
+    using namemap = std::unordered_map<align::vertical, std::string>;
+    static namemap const names{
+        { align::vertical::top,    "top" },
+        { align::vertical::bottom, "bottom" },
+        { align::vertical::center, "center" },
+        { align::vertical::fill,   "fill" }
+    };
+    return names.find(vert)->second;
+}
+
+template<typename value>
+concept string_convertible =
+requires(value const & v) {
+    { gold::to_string(v) } -> std::convertible_to<std::string>;
+};
+}
+namespace align = gold::align;
+
+namespace std {
+template<gold::string_convertible value>
+std::ostream & operator<<(std::ostream & os, value const & v) {
+    return os << gold::to_string(v);
+}
+}
+
+namespace gold {
+/** Define how a widget will be aligned in the layout */
+struct layout {
+    align::horizontal horizontal = align::horizontal::left;
+    align::vertical vertical = align::vertical::top;
+};
 /** A widget will render with the desired size. */
 struct size {
     float width = 0.f;
@@ -83,28 +128,51 @@ void gold::render(entt::registry & widgets, entt::entity widget)
     auto const id = std::to_string(static_cast<std::uint32_t>(widget));
     if (auto const * size = widgets.try_get<gold::size>(widget)) {
         auto desired_size = size->vector();
-        if (auto const * hjust =
-                widgets.try_get<gold::just::horizontal>(widget)) {
+        if (auto const * halign = widgets.try_get<align::horizontal>(widget)) {
 
             float const avail_width = ImGui::GetContentRegionAvail().x;
             float const cursor_x = ImGui::GetCursorPosX();
-            float x_offset = 0.f;
+            float x_offset;
 
-            switch (*hjust) {
-                case gold::just::horizontal::right:
+            switch (*halign) {
+                case align::horizontal::right:
                     x_offset = avail_width - size->width;
                     ImGui::SetCursorPosX(cursor_x + x_offset);
                     break;
-                case gold::just::horizontal::center:
+                case align::horizontal::center:
                     x_offset = (avail_width - size->width)/2.f;
                     ImGui::SetCursorPosX(cursor_x +  x_offset);
                     break;
-                case gold::just::horizontal::fill:
+                case align::horizontal::fill:
                     desired_size.x = 0.f;
                     break;
-                case gold::just::horizontal::left:
+                case align::horizontal::left:
                 default:
                     break;
+            }
+        }
+        if (auto const * valign = widgets.try_get<align::vertical>(widget)) {
+            float const avail_height = ImGui::GetContentRegionAvail().y;
+            float const cursor_y = ImGui::GetCursorPosY();
+            float y_offset;
+
+            switch (*valign) {
+            case align::vertical::bottom:
+                y_offset = avail_height - size->height;
+                // TODO: be careful with the cursor!! (maybe use a push fn instead?)
+                ImGui::SetCursorPosY(cursor_y + y_offset);
+                break;
+            case align::vertical::center:
+                y_offset = (avail_height - size->height)/2.f;
+                // TODO: be careful with the cursor!! (maybe use a push fn instead?)
+                ImGui::SetCursorPosY(cursor_y + y_offset);
+                break;
+            case align::vertical::fill:
+                desired_size.y = 0.f;
+                break;
+            case align::vertical::top:
+            default:
+                break;
             }
         }
         ImGui::BeginChild(id.c_str(), desired_size);
@@ -112,10 +180,104 @@ void gold::render(entt::registry & widgets, entt::entity widget)
     else {
         ImGui::BeginChild(id.c_str());
     }
-    ImGui::EndChild();
     if (color) {
         ImGui::PopStyleColor();
     }
+    ImGui::EndChild();
+}
+
+namespace konbu {
+template<ranges::output_range<YAML::Exception> error_output>
+void read(YAML::Node const & config,
+          align::horizontal & halign,
+          error_output & errors)
+{
+    static std::unordered_map<std::string, align::horizontal> const
+    as_halign {
+        { "left",   align::horizontal::left },
+        { "right",  align::horizontal::right },
+        { "center", align::horizontal::center },
+        { "fill",   align::horizontal::fill }
+    };
+    // read the errors first into an isolated list, so that we can
+    // re-contextualize them before copying them into the main error list
+    konbu::read_lookup(config, halign, as_halign, errors);
+}
+
+template <ranges::output_range<YAML::Exception> error_output>
+void read(YAML::Node const & config,
+          align::vertical & valign,
+          error_output & errors)
+{
+    static std::unordered_map<std::string, align::vertical> const
+    as_valign {
+        { "top",     align::vertical::top },
+        { "bottom",  align::vertical::bottom },
+        { "center",  align::vertical::center },
+        { "fill",    align::vertical::fill }
+    };
+    // read the errors first into an isolated list, so that we can
+    // re-contextualize them before copying them into the main error list
+    konbu::read_lookup(config, valign, as_valign, errors);
+}
+
+template<ranges::output_range<YAML::Exception> error_output>
+void read(YAML::Node const & config,
+          gold::layout & layout,
+          error_output & errors)
+{
+    namespace ranges = std::ranges;
+    namespace views = std::views;
+
+    YAML::Node horizontal_config;
+    YAML::Node vertical_config;
+
+    if (config.IsScalar()) {
+        std::unordered_set<std::string> const valid_names{ "center", "fill" };
+        if (valid_names.find(config.Scalar()) != valid_names.end()) {
+            horizontal_config = config;
+            vertical_config = config;
+        }
+        else {
+            YAML::Exception const error{ config.Mark(),
+                                         R"(expecting "center" or "fill")" };
+            ranges::copy(views::single(error),
+                         konbu::back_inserter_preference(errors));
+            return;
+        }
+    }
+    else if (config.IsSequence() and config.size() == 2) {
+        horizontal_config = config[0];
+        vertical_config = config[1];
+    }
+    else if (config.IsSequence()) {
+        YAML::Exception const error{ config.Mark(),
+                                     "expecting exactly two values" };
+        ranges::copy(views::single(error),
+                     konbu::back_inserter_preference(errors));
+        return;
+    }
+    else if (config.IsMap()) {
+        horizontal_config = config["horizontal"];
+        vertical_config = config["vertical"];
+    }
+    if (horizontal_config) {
+        std::vector<YAML::Exception> horizontal_errors;
+        konbu::read(horizontal_config, layout.horizontal, horizontal_errors);
+        ranges::transform(horizontal_errors,
+                          konbu::back_inserter_preference(errors),
+                          konbu::contextualize_param("horizontal",
+                                                     layout.horizontal));
+    }
+    if (vertical_config) {
+        std::vector<YAML::Exception> vertical_errors;
+        konbu::read(vertical_config, layout.vertical, vertical_errors);
+        ranges::transform(vertical_errors,
+                          konbu::back_inserter_preference(errors),
+                          konbu::contextualize_param("vertical",
+                                                     layout.vertical));
+    }
+}
 }
 
 namespace global {
@@ -135,11 +297,22 @@ void render(SDL_Window *)
     static auto const square = widgets.create();
     static bool has_init = false;
     if (not has_init) {
+        std::vector<YAML::Exception> errors;
+
+        YAML::Node const halign_config{"center"};
+        YAML::Node const valign_config{"fill"};
+
+        auto halign = align::horizontal::left;
+        konbu::read(halign_config, halign, errors);
+
+        auto valign = align::vertical::top;
+        konbu::read(valign_config, valign, errors);
+
         widgets.emplace<gold::background_color>(
             square, 0.429f, 0.160f, 0.480f, 0.540f);
         widgets.emplace<gold::size>(square, 100.f, 100.f);
-        namespace just = gold::just;
-        widgets.emplace<just::horizontal>(square, just::horizontal::center);
+        widgets.emplace<align::horizontal>(square, halign);
+        widgets.emplace<align::vertical>(square, valign);
         has_init = true;
     }
 
