@@ -48,17 +48,47 @@ struct editor {
 }
 
 namespace ImGui {
-void ShowHorizontalAlignOptions(entt::registry & widgets, entt::entity widget)
+template<class align_enum>
+void ShowAlignOptions(entt::registry & widgets, entt::entity widget)
 {
-    auto & selected_option = widgets
-        .get_or_emplace<align::horizontal>(widget, align::horizontal::left);
+    auto & selected_option = widgets.get<align_enum>(widget);
+
+    if (not ImGui::BeginTable("Horizontal Alignment Options", 4)) {
+        ImGui::EndTable();
+        return;
+    }
     for (int i = 0; i < 4; ++i) {
-        align::horizontal option{ i };
+        ImGui::TableNextColumn();
+        align_enum option{ i };
         if (ImGui::Selectable(gold::to_string(option).c_str(),
                               option == selected_option)) {
             selected_option = option;
         }
     }
+    ImGui::EndTable();
+}
+
+void ShowLayoutOptions(entt::registry & widgets, entt::entity widget)
+{
+    if (not ImGui::BeginTable("Widget Components", 2)) {
+        ImGui::EndTable();
+    }
+    ImGui::Indent();
+
+    ImGui::TableNextColumn();
+    ImGui::Text("Horizontal");
+
+    ImGui::TableNextColumn();
+    ShowAlignOptions<align::horizontal>(widgets, widget);
+
+    ImGui::TableNextColumn();
+    ImGui::Text("Vertical");
+
+    ImGui::TableNextColumn();
+    ShowAlignOptions<align::vertical>(widgets, widget);
+
+    ImGui::Unindent();
+    ImGui::EndTable();
 }
 
 void ShowEditorWindow(bool * is_open, gold::editor & editor)
@@ -72,7 +102,9 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
         ImGui::End();
         return;
     }
-    ShowHorizontalAlignOptions(editor.widgets, editor.selected_widget);
+    ImGui::Text("Layout");
+    ImGui::Spacing();
+    ImGui::ShowLayoutOptions(editor.widgets, editor.selected_widget);
     ImGui::End();
 }
 }
