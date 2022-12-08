@@ -51,9 +51,11 @@ namespace ImGui {
 template<class align_enum>
 void ShowAlignOptions(entt::registry & widgets, entt::entity widget)
 {
-    auto & selected_option = widgets.get<align_enum>(widget);
-
-    if (not ImGui::BeginTable("Horizontal Alignment Options", 4)) {
+    auto * selected_option = widgets.try_get<align_enum>(widget);
+    if (not selected_option) {
+        return;
+    }
+    if (not ImGui::BeginTable("Alignment Options", 4)) {
         ImGui::EndTable();
         return;
     }
@@ -61,8 +63,8 @@ void ShowAlignOptions(entt::registry & widgets, entt::entity widget)
         ImGui::TableNextColumn();
         align_enum option{ i };
         if (ImGui::Selectable(gold::to_string(option).c_str(),
-                              option == selected_option)) {
-            selected_option = option;
+                              option == *selected_option)) {
+            *selected_option = option;
         }
     }
     ImGui::EndTable();
@@ -73,8 +75,6 @@ void ShowLayoutOptions(entt::registry & widgets, entt::entity widget)
     if (not ImGui::BeginTable("Widget Components", 2)) {
         ImGui::EndTable();
     }
-    ImGui::Indent();
-
     ImGui::TableNextColumn();
     ImGui::Text("Horizontal");
 
@@ -86,8 +86,27 @@ void ShowLayoutOptions(entt::registry & widgets, entt::entity widget)
 
     ImGui::TableNextColumn();
     ShowAlignOptions<align::vertical>(widgets, widget);
+    ImGui::EndTable();
+}
+void ShowSizeOptions(entt::registry & widgets, entt::entity widget)
+{
+    auto * size = widgets.try_get<gold::size>(widget);
+    if (not size) {
+        return;
+    }
+    if (not ImGui::BeginTable("Widget Size Input", 2)) {
+        ImGui::EndTable();
+        return;
+    }
+    ImGui::TableNextColumn();
+    ImGui::Text("Width");
+    ImGui::TableNextColumn();
+    ImGui::Text("Height");
 
-    ImGui::Unindent();
+    ImGui::TableNextColumn();
+    ImGui::DragFloat("##Widget-Width", &size->width);
+    ImGui::TableNextColumn();
+    ImGui::DragFloat("##Widget-Height", &size->height);
     ImGui::EndTable();
 }
 
@@ -102,9 +121,19 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
         ImGui::End();
         return;
     }
-    ImGui::Text("Layout");
+    ImGui::Text("Alignment");
     ImGui::Spacing();
+
+    ImGui::Indent();
     ImGui::ShowLayoutOptions(editor.widgets, editor.selected_widget);
+    ImGui::Unindent();
+
+    ImGui::Text("Size");
+    ImGui::Spacing();
+
+    ImGui::Indent();
+    ImGui::ShowSizeOptions(editor.widgets, editor.selected_widget);
+    ImGui::Unindent();
     ImGui::End();
 }
 }
