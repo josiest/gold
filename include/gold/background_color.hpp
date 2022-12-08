@@ -5,10 +5,10 @@ namespace gold {
 
 /** A widget will align_cursor with the desired color. */
 struct background_color {
-    float red = 0.f;
-    float green = 0.f;
-    float blue = 0.f;
-    float alpha = 1.f;
+    float red = .16f;
+    float green = .65f;
+    float blue = 1.f;
+    float alpha = .5f;
 
     [[nodiscard]] constexpr ImVec4 vector() const;
 };

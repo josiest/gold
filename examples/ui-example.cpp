@@ -170,8 +170,7 @@ entt::entity make_square(entt::registry & widgets)
         konbu::read(layout_config, layout, errors);
     }
     auto const square = widgets.create();
-    widgets.emplace<gold::background_color>(
-        square, 0.429f, 0.160f, 0.480f, 0.540f);
+    widgets.emplace<gold::background_color>(square);
     widgets.emplace<gold::size>(square, 100.f, 100.f);
     widgets.emplace<align::horizontal>(square, layout.horizontal);
     widgets.emplace<align::vertical>(square, layout.vertical);
