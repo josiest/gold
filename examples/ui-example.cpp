@@ -109,6 +109,21 @@ void ShowSizeOptions(entt::registry & widgets, entt::entity widget)
     ImGui::DragFloat("##Widget-Height", &size->height);
     ImGui::EndTable();
 }
+void ShowColorOptions(entt::registry & widgets, entt::entity widget)
+{
+    auto * color = widgets.try_get<gold::background_color>(widget);
+    if (not color) {
+        return;
+    }
+    float color_values[] {
+        color->red, color->green, color->blue, color->alpha
+    };
+    ImGui::ColorEdit4("##Widget-Color", color_values);
+    color->red = color_values[0];
+    color->green = color_values[1];
+    color->blue = color_values[2];
+    color->alpha = color_values[3];
+}
 
 void ShowEditorWindow(bool * is_open, gold::editor & editor)
 {
@@ -133,6 +148,13 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
 
     ImGui::Indent();
     ImGui::ShowSizeOptions(editor.widgets, editor.selected_widget);
+    ImGui::Unindent();
+
+    ImGui::Text("Color");
+    ImGui::Spacing();
+
+    ImGui::Indent();
+    ImGui::ShowColorOptions(editor.widgets, editor.selected_widget);
     ImGui::Unindent();
     ImGui::End();
 }
