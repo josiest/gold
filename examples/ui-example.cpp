@@ -54,7 +54,7 @@ namespace ImGui {
 template<class align_enum>
 requires std::same_as<align_enum, gold::align::horizontal> or
          std::same_as<align_enum, gold::align::vertical>
-void ShowAlignOptions(align_enum & selected_option)
+void ShowOptions(align_enum & selected_option)
 {
     if (not ImGui::BeginTable("Alignment Options", 4)) {
         ImGui::EndTable();
@@ -71,7 +71,7 @@ void ShowAlignOptions(align_enum & selected_option)
     ImGui::EndTable();
 }
 
-void ShowLayoutOptions(gold::layout & layout)
+void ShowOptions(gold::layout & layout)
 {
     if (not ImGui::BeginTable("Widget Components", 2)) {
         ImGui::EndTable();
@@ -81,16 +81,16 @@ void ShowLayoutOptions(gold::layout & layout)
     ImGui::Text("Horizontal");
 
     ImGui::TableNextColumn();
-    ShowAlignOptions(layout.horizontal);
+    ShowOptions(layout.horizontal);
 
     ImGui::TableNextColumn();
     ImGui::Text("Vertical");
 
     ImGui::TableNextColumn();
-    ShowAlignOptions(layout.vertical);
+    ShowOptions(layout.vertical);
     ImGui::EndTable();
 }
-void ShowSizeOptions(gold::size & size)
+void ShowOptions(gold::size & size)
 {
     if (not ImGui::BeginTable("Widget Size Input", 2)) {
         ImGui::EndTable();
@@ -107,7 +107,7 @@ void ShowSizeOptions(gold::size & size)
     ImGui::DragFloat("##Widget-Height", &size.height, 1.f, 0.f, FLT_MAX, "%.1f");
     ImGui::EndTable();
 }
-void ShowColorOptions(gold::background_color & color)
+void ShowOptions(gold::background_color & color)
 {
     float color_values[] {
         color.red, color.green, color.blue, color.alpha
@@ -164,7 +164,7 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
         ImGui::Spacing();
 
         ImGui::Indent();
-        ImGui::ShowLayoutOptions(*layout);
+        ImGui::ShowOptions(*layout);
         ImGui::Unindent();
     }
     if (auto * size = editor.widgets.try_get<gold::size>(
@@ -174,7 +174,7 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
         ImGui::Spacing();
 
         ImGui::Indent();
-        ImGui::ShowSizeOptions(*size);
+        ImGui::ShowOptions(*size);
         ImGui::Unindent();
     }
     if (auto * bg_color = editor.widgets.try_get<gold::background_color>(
@@ -184,7 +184,7 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
         ImGui::Spacing();
 
         ImGui::Indent();
-        ImGui::ShowColorOptions(*bg_color);
+        ImGui::ShowOptions(*bg_color);
         ImGui::Unindent();
     }
     ImGui::End();
