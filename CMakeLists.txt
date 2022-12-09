@@ -4,7 +4,7 @@ project(gold VERSION 0.2.0)
 add_library(gold STATIC
     src/layout.cpp
     src/render.cpp
-    src/widget.cpp)
+    src/widget.cpp src/size.cpp)
 target_sources(gold PUBLIC
     FILE_SET HEADERS
     BASE_DIRS include
@@ -13,6 +13,7 @@ target_sources(gold PUBLIC
     include/gold/layout.tcc
     include/gold/background_color.hpp
     include/gold/size.hpp
+    include/gold/size.tcc
     include/gold/utility.hpp
     include/gold/render.hpp
     include/gold/widget.hpp)

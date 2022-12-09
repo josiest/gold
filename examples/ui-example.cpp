@@ -110,9 +110,9 @@ void ShowSizeOptions(entt::registry & widgets, entt::entity widget)
     ImGui::Text("Height");
 
     ImGui::TableNextColumn();
-    ImGui::DragFloat("##Widget-Width", &size->width);
+    ImGui::DragFloat("##Widget-Width", &size->width, 1.f, 0.f, FLT_MAX, "%.1f");
     ImGui::TableNextColumn();
-    ImGui::DragFloat("##Widget-Height", &size->height);
+    ImGui::DragFloat("##Widget-Height", &size->height, 1.f, 0.f, FLT_MAX, "%.1f");
     ImGui::EndTable();
 }
 void ShowColorOptions(entt::registry & widgets, entt::entity widget)
@@ -142,6 +142,33 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
         ImGui::End();
         return;
     }
+
+    ImGui::Text("Save Widget");
+    ImGui::Spacing();
+
+    static char widget_filename[128] = "widget.yaml";
+    ImGui::InputText("##Widget-Path-Input", widget_filename,
+                     IM_ARRAYSIZE(widget_filename));
+
+    auto const widget_path = paths::assets/widget_filename;
+    ImGui::SameLine();
+    static std::string saved_to;
+    if (ImGui::Button("Save")) {
+        YAML::Emitter out;
+        gold::write(out, editor.widgets, editor.selected_widget);
+        std::ofstream file{ widget_path.string(), std::ios_base::trunc };
+        file << out.c_str();
+        file.close();
+        saved_to = widget_path.string();
+    }
+    if (not saved_to.empty()) {
+        ImGui::Text("Widget saved to:");
+        ImGui::Indent();
+        ImGui::Text("%s", saved_to.c_str());
+        ImGui::Unindent();
+    }
+    ImGui::Separator();
+
     ImGui::Text("Alignment");
     ImGui::Spacing();
 
@@ -163,28 +190,6 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
     ImGui::ShowColorOptions(editor.widgets, editor.selected_widget);
     ImGui::Unindent();
 
-    ImGui::Spacing();
-    static char widget_filename[128] = "widget.yaml";
-    ImGui::InputText("##Widget-Path-Input", widget_filename,
-                                            IM_ARRAYSIZE(widget_filename));
-
-    auto const widget_path = paths::assets/widget_filename;
-    ImGui::SameLine();
-    static std::string saved_to;
-    if (ImGui::Button("Save")) {
-        YAML::Emitter out;
-        gold::write(out, editor.widgets, editor.selected_widget);
-        std::ofstream file{ widget_path.string(), std::ios_base::trunc };
-        file << out.c_str();
-        file.close();
-        saved_to = widget_path.string();
-    }
-    if (not saved_to.empty()) {
-        ImGui::Text("Widget saved to:");
-        ImGui::Indent();
-        ImGui::Text("%s", saved_to.c_str());
-        ImGui::Unindent();
-    }
     ImGui::End();
 }
 }
