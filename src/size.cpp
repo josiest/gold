@@ -4,7 +4,7 @@ float gold::sq_dist(gold::size const & lhs, gold::size const & rhs)
 {
     auto const dw = lhs.width - rhs.width;
     auto const dh = lhs.height - rhs.height;
-    return dw * dw + dh * dh;
+    return dw*dw + dh*dh;
 }
 YAML::Node YAML::convert<gold::size>::encode(const gold::size & size)
 {

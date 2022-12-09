@@ -71,12 +71,8 @@ void ShowAlignOptions(align_enum & selected_option)
     ImGui::EndTable();
 }
 
-void ShowLayoutOptions(entt::registry & widgets, entt::entity widget)
+void ShowLayoutOptions(gold::layout & layout)
 {
-    auto * layout = widgets.try_get<gold::layout>(widget);
-    if (not layout) {
-        return;
-    }
     if (not ImGui::BeginTable("Widget Components", 2)) {
         ImGui::EndTable();
         return;
@@ -85,21 +81,17 @@ void ShowLayoutOptions(entt::registry & widgets, entt::entity widget)
     ImGui::Text("Horizontal");
 
     ImGui::TableNextColumn();
-    ShowAlignOptions(layout->horizontal);
+    ShowAlignOptions(layout.horizontal);
 
     ImGui::TableNextColumn();
     ImGui::Text("Vertical");
 
     ImGui::TableNextColumn();
-    ShowAlignOptions(layout->vertical);
+    ShowAlignOptions(layout.vertical);
     ImGui::EndTable();
 }
-void ShowSizeOptions(entt::registry & widgets, entt::entity widget)
+void ShowSizeOptions(gold::size & size)
 {
-    auto * size = widgets.try_get<gold::size>(widget);
-    if (not size) {
-        return;
-    }
     if (not ImGui::BeginTable("Widget Size Input", 2)) {
         ImGui::EndTable();
         return;
@@ -110,25 +102,21 @@ void ShowSizeOptions(entt::registry & widgets, entt::entity widget)
     ImGui::Text("Height");
 
     ImGui::TableNextColumn();
-    ImGui::DragFloat("##Widget-Width", &size->width, 1.f, 0.f, FLT_MAX, "%.1f");
+    ImGui::DragFloat("##Widget-Width", &size.width, 1.f, 0.f, FLT_MAX, "%.1f");
     ImGui::TableNextColumn();
-    ImGui::DragFloat("##Widget-Height", &size->height, 1.f, 0.f, FLT_MAX, "%.1f");
+    ImGui::DragFloat("##Widget-Height", &size.height, 1.f, 0.f, FLT_MAX, "%.1f");
     ImGui::EndTable();
 }
-void ShowColorOptions(entt::registry & widgets, entt::entity widget)
+void ShowColorOptions(gold::background_color & color)
 {
-    auto * color = widgets.try_get<gold::background_color>(widget);
-    if (not color) {
-        return;
-    }
     float color_values[] {
-        color->red, color->green, color->blue, color->alpha
+        color.red, color.green, color.blue, color.alpha
     };
     ImGui::ColorEdit4("##Widget-Color", color_values);
-    color->red = color_values[0];
-    color->green = color_values[1];
-    color->blue = color_values[2];
-    color->alpha = color_values[3];
+    color.red = color_values[0];
+    color.green = color_values[1];
+    color.blue = color_values[2];
+    color.alpha = color_values[3];
 }
 
 void ShowEditorWindow(bool * is_open, gold::editor & editor)
@@ -169,27 +157,36 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
     }
     ImGui::Separator();
 
-    ImGui::Text("Alignment");
-    ImGui::Spacing();
+    if (auto * layout = editor.widgets.try_get<gold::layout>(
+            editor.selected_widget))
+    {
+        ImGui::Text("Alignment");
+        ImGui::Spacing();
 
-    ImGui::Indent();
-    ImGui::ShowLayoutOptions(editor.widgets, editor.selected_widget);
-    ImGui::Unindent();
+        ImGui::Indent();
+        ImGui::ShowLayoutOptions(*layout);
+        ImGui::Unindent();
+    }
+    if (auto * size = editor.widgets.try_get<gold::size>(
+            editor.selected_widget))
+    {
+        ImGui::Text("Size");
+        ImGui::Spacing();
 
-    ImGui::Text("Size");
-    ImGui::Spacing();
+        ImGui::Indent();
+        ImGui::ShowSizeOptions(*size);
+        ImGui::Unindent();
+    }
+    if (auto * bg_color = editor.widgets.try_get<gold::background_color>(
+            editor.selected_widget))
+    {
+        ImGui::Text("Background Color");
+        ImGui::Spacing();
 
-    ImGui::Indent();
-    ImGui::ShowSizeOptions(editor.widgets, editor.selected_widget);
-    ImGui::Unindent();
-
-    ImGui::Text("Color");
-    ImGui::Spacing();
-
-    ImGui::Indent();
-    ImGui::ShowColorOptions(editor.widgets, editor.selected_widget);
-    ImGui::Unindent();
-
+        ImGui::Indent();
+        ImGui::ShowColorOptions(*bg_color);
+        ImGui::Unindent();
+    }
     ImGui::End();
 }
 }
