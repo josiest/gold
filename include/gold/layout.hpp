@@ -67,4 +67,4 @@ struct convert<gold::layout> {
 };
 Emitter & operator<<(Emitter & out, gold::layout layout);
 }
-#include "layout.tcc"
+#include "gold/impl/layout.tcc"

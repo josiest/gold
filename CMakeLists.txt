@@ -11,14 +11,15 @@ target_sources(gold PUBLIC
     BASE_DIRS include
     FILES
     include/gold/layout.hpp
-    include/gold/layout.tcc
     include/gold/background_color.hpp
-    include/gold/background_color.tcc
     include/gold/size.hpp
-    include/gold/size.tcc
     include/gold/utility.hpp
     include/gold/render.hpp
-    include/gold/widget.hpp)
+    include/gold/widget.hpp
+
+    include/gold/impl/size.tcc
+    include/gold/impl/layout.tcc
+    include/gold/impl/background_color.tcc)
 set_target_properties(gold PROPERTIES
     CXX_STANDARD 23
     CXX_STANDARD_REQUIRED TRUE)

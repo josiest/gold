@@ -28,4 +28,4 @@ struct convert<gold::background_color> {
     static Node encode(gold::background_color const & color);
 };
 }
-#include "gold/background_color.tcc"
+#include "gold/impl/background_color.tcc"

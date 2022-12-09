@@ -27,4 +27,4 @@ struct convert<gold::size> {
     static Node encode(gold::size const & size);
 };
 }
-#include "gold/size.tcc"
+#include "gold/impl/size.tcc"
