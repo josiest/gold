@@ -205,11 +205,11 @@ entt::entity make_square(entt::registry & widgets)
     }
     gold::size size;
     if (auto const size_config = config["size"]) {
-        konbu::read(size_config, layout, errors);
+        konbu::read(size_config, size, errors);
     }
     gold::background_color bg_color;
     if (auto const color_config = config["bg-color"]) {
-        konbu::read(color_config, layout, errors);
+        konbu::read(color_config, bg_color, errors);
     }
     auto const square = widgets.create();
     widgets.emplace<gold::layout>(square, layout);
