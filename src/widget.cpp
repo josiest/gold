@@ -17,7 +17,7 @@ gold::write(YAML::Emitter & out, entt::registry const & widgets,
     if (auto const * layout = widgets.try_get<gold::layout>(widget)) {
         gold::layout const default_layout;
         if (default_layout != *layout) {
-            out << YAML::Key << "layout"
+            out << YAML::Key << "align"
                 << YAML::Value << YAML::Flow << YAML::Node{ *layout };
         }
     }

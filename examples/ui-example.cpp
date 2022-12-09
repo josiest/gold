@@ -194,36 +194,15 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
 }
 }
 
-entt::entity make_square(entt::registry & widgets)
-{
-    std::vector<YAML::Exception> errors;
-    auto const config = YAML::LoadFile(paths::widget_config.string());
-
-    gold::layout layout;
-    if (auto const layout_config = config["layout"]) {
-        konbu::read(layout_config, layout, errors);
-    }
-    gold::size size;
-    if (auto const size_config = config["size"]) {
-        konbu::read(size_config, size, errors);
-    }
-    gold::background_color bg_color;
-    if (auto const color_config = config["bg-color"]) {
-        konbu::read(color_config, bg_color, errors);
-    }
-    auto const square = widgets.create();
-    widgets.emplace<gold::layout>(square, layout);
-    widgets.emplace<gold::size>(square, size);
-    widgets.emplace<gold::background_color>(square, bg_color);
-    return square;
-}
-
 void render(SDL_Window *)
 {
     static gold::editor editor;
     static bool has_init = false;
     if (not has_init) {
-        editor.selected_widget = make_square(editor.widgets);
+        std::vector<YAML::Exception> errors;
+        auto const config = YAML::LoadFile(paths::widget_config.string());
+        editor.selected_widget = konbu::read_widget(
+            config, editor.widgets, errors);
         has_init = true;
     }
     if (global::show_demo) {

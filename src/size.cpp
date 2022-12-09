@@ -8,7 +8,7 @@ float gold::sq_dist(gold::size const & lhs, gold::size const & rhs)
 }
 YAML::Node YAML::convert<gold::size>::encode(const gold::size & size)
 {
-    if (size.width - size.height >= .1f) {
+    if (std::abs(size.width - size.height) >= .1f) {
         YAML::Node node;
         node.push_back(size.width);
         node.push_back(size.height);

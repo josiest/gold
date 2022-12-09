@@ -17,6 +17,7 @@ target_sources(gold PUBLIC
     include/gold/render.hpp
     include/gold/widget.hpp
 
+    include/gold/impl/widget.tcc
     include/gold/impl/size.tcc
     include/gold/impl/layout.tcc
     include/gold/impl/background_color.tcc)
