@@ -67,11 +67,9 @@ void gold::render(entt::registry & widgets, entt::entity widget)
     auto const id = std::to_string(static_cast<std::uint32_t>(widget));
     if (auto const * size = widgets.try_get<gold::size>(widget)) {
         auto desired_size = size->vector();
-        if (auto const * halign = widgets.try_get<align::horizontal>(widget)) {
-            align_cursor(*size, *halign, desired_size);
-        }
-        if (auto const * valign = widgets.try_get<align::vertical>(widget)) {
-            align_cursor(*size, *valign, desired_size);
+        if (auto const * layout = widgets.try_get<gold::layout>(widget)) {
+            align_cursor(*size, layout->horizontal, desired_size);
+            align_cursor(*size, layout->vertical, desired_size);
         }
         ImGui::BeginChild(id.c_str(), desired_size);
     }

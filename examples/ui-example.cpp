@@ -9,6 +9,7 @@
 #include "gold/layout.hpp"
 #include "gold/size.hpp"
 #include "gold/background_color.hpp"
+#include "gold/widget.hpp"
 
 // data types and structure
 #include <string>
@@ -17,10 +18,12 @@
 // serialization and i/o
 #include <yaml-cpp/yaml.h>
 #include <iostream>
+#include <fstream>
 #include <filesystem>
 namespace fs = std::filesystem;
 
 // type constraints and algorithms
+#include <concepts>
 #include <ranges>
 #include <algorithm>
 namespace ranges = std::ranges;
@@ -49,12 +52,10 @@ struct editor {
 
 namespace ImGui {
 template<class align_enum>
-void ShowAlignOptions(entt::registry & widgets, entt::entity widget)
+requires std::same_as<align_enum, gold::align::horizontal> or
+         std::same_as<align_enum, gold::align::vertical>
+void ShowAlignOptions(align_enum & selected_option)
 {
-    auto * selected_option = widgets.try_get<align_enum>(widget);
-    if (not selected_option) {
-        return;
-    }
     if (not ImGui::BeginTable("Alignment Options", 4)) {
         ImGui::EndTable();
         return;
@@ -63,8 +64,8 @@ void ShowAlignOptions(entt::registry & widgets, entt::entity widget)
         ImGui::TableNextColumn();
         align_enum option{ i };
         if (ImGui::Selectable(gold::to_string(option).c_str(),
-                              option == *selected_option)) {
-            *selected_option = option;
+                              option == selected_option)) {
+            selected_option = option;
         }
     }
     ImGui::EndTable();
@@ -72,20 +73,25 @@ void ShowAlignOptions(entt::registry & widgets, entt::entity widget)
 
 void ShowLayoutOptions(entt::registry & widgets, entt::entity widget)
 {
+    auto * layout = widgets.try_get<gold::layout>(widget);
+    if (not layout) {
+        return;
+    }
     if (not ImGui::BeginTable("Widget Components", 2)) {
         ImGui::EndTable();
+        return;
     }
     ImGui::TableNextColumn();
     ImGui::Text("Horizontal");
 
     ImGui::TableNextColumn();
-    ShowAlignOptions<align::horizontal>(widgets, widget);
+    ShowAlignOptions(layout->horizontal);
 
     ImGui::TableNextColumn();
     ImGui::Text("Vertical");
 
     ImGui::TableNextColumn();
-    ShowAlignOptions<align::vertical>(widgets, widget);
+    ShowAlignOptions(layout->vertical);
     ImGui::EndTable();
 }
 void ShowSizeOptions(entt::registry & widgets, entt::entity widget)
@@ -156,6 +162,29 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
     ImGui::Indent();
     ImGui::ShowColorOptions(editor.widgets, editor.selected_widget);
     ImGui::Unindent();
+
+    ImGui::Spacing();
+    static char widget_filename[128] = "widget.yaml";
+    ImGui::InputText("##Widget-Path-Input", widget_filename,
+                                            IM_ARRAYSIZE(widget_filename));
+
+    auto const widget_path = paths::assets/widget_filename;
+    ImGui::SameLine();
+    static std::string saved_to;
+    if (ImGui::Button("Save")) {
+        YAML::Emitter out;
+        gold::write(out, editor.widgets, editor.selected_widget);
+        std::ofstream file{ widget_path.string(), std::ios_base::trunc };
+        file << out.c_str();
+        file.close();
+        saved_to = widget_path.string();
+    }
+    if (not saved_to.empty()) {
+        ImGui::Text("Widget saved to:");
+        ImGui::Indent();
+        ImGui::Text("%s", saved_to.c_str());
+        ImGui::Unindent();
+    }
     ImGui::End();
 }
 }
@@ -168,12 +197,14 @@ entt::entity make_square(entt::registry & widgets)
     gold::layout layout;
     if (auto const layout_config = config["layout"]) {
         konbu::read(layout_config, layout, errors);
+        std::cout << "read layout config: ["
+                  << gold::to_string(layout.horizontal) << ", "
+                  << gold::to_string(layout.vertical) << "]\n";
     }
     auto const square = widgets.create();
     widgets.emplace<gold::background_color>(square);
     widgets.emplace<gold::size>(square, 100.f, 100.f);
-    widgets.emplace<align::horizontal>(square, layout.horizontal);
-    widgets.emplace<align::vertical>(square, layout.vertical);
+    widgets.emplace<gold::layout>(square, layout);
     return square;
 }
 

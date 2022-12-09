@@ -23,3 +23,19 @@ std::string gold::to_string(align::vertical const & vert) {
     };
     return names.find(vert)->second;
 }
+namespace align = gold::align;
+YAML::Node YAML::convert<align::horizontal>::encode(align::horizontal halign)
+{
+    return YAML::Node{ gold::to_string(halign) };
+}
+YAML::Node YAML::convert<align::vertical>::encode(align::vertical valign)
+{
+    return YAML::Node{ gold::to_string(valign) };
+}
+YAML::Node YAML::convert<gold::layout>::encode(gold::layout layout)
+{
+    YAML::Node node;
+    node.push_back(layout.horizontal);
+    node.push_back(layout.vertical);
+    return node;
+}

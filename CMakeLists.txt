@@ -3,7 +3,8 @@ project(gold VERSION 0.2.0)
 
 add_library(gold STATIC
     src/layout.cpp
-    src/render.cpp)
+    src/render.cpp
+    src/widget.cpp)
 target_sources(gold PUBLIC
     FILE_SET HEADERS
     BASE_DIRS include
@@ -13,7 +14,8 @@ target_sources(gold PUBLIC
     include/gold/background_color.hpp
     include/gold/size.hpp
     include/gold/utility.hpp
-    include/gold/render.hpp)
+    include/gold/render.hpp
+    include/gold/widget.hpp)
 set_target_properties(gold PROPERTIES
     CXX_STANDARD 23
     CXX_STANDARD_REQUIRED TRUE)

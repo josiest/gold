@@ -25,6 +25,8 @@ enum class vertical {
 struct layout {
     align::horizontal horizontal = align::horizontal::left;
     align::vertical vertical = align::vertical::top;
+
+    bool constexpr operator==(layout const & rhs) const = default;
 };
 
 std::string to_string(align::horizontal const & horizontal);
@@ -47,6 +49,22 @@ template<std::ranges::output_range<YAML::Exception> error_output>
 void read(YAML::Node const & config,
           gold::layout & layout,
           error_output & errors);
+}
 
+namespace YAML {
+template<>
+struct convert<gold::align::horizontal> {
+    static Node encode(gold::align::horizontal halign);
+};
+
+template<>
+struct convert<gold::align::vertical> {
+    static Node encode(gold::align::vertical valign);
+};
+template<>
+struct convert<gold::layout> {
+    static Node encode(gold::layout layout);
+};
+Emitter & operator<<(Emitter & out, gold::layout layout);
 }
 #include "layout.tcc"
