@@ -202,14 +202,19 @@ entt::entity make_square(entt::registry & widgets)
     gold::layout layout;
     if (auto const layout_config = config["layout"]) {
         konbu::read(layout_config, layout, errors);
-        std::cout << "read layout config: ["
-                  << gold::to_string(layout.horizontal) << ", "
-                  << gold::to_string(layout.vertical) << "]\n";
+    }
+    gold::size size;
+    if (auto const size_config = config["size"]) {
+        konbu::read(size_config, layout, errors);
+    }
+    gold::background_color bg_color;
+    if (auto const color_config = config["bg-color"]) {
+        konbu::read(color_config, layout, errors);
     }
     auto const square = widgets.create();
-    widgets.emplace<gold::background_color>(square);
-    widgets.emplace<gold::size>(square, 100.f, 100.f);
     widgets.emplace<gold::layout>(square, layout);
+    widgets.emplace<gold::size>(square, size);
+    widgets.emplace<gold::background_color>(square, bg_color);
     return square;
 }
 

@@ -1,2 +1,3 @@
-layout: [left, top]
+layout: [center, bottom]
 size: 100
+bg-color: [1, 0.65882349, 0.763183415]

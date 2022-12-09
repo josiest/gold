@@ -1,5 +1,7 @@
 #pragma once
 #include "imgui/imgui.h"
+#include <ranges>
+#include <yaml-cpp/yaml.h>
 
 namespace gold {
 
@@ -12,8 +14,18 @@ struct background_color {
 
     [[nodiscard]] constexpr ImVec4 vector() const;
 };
+constexpr float sq_dist(gold::background_color const & lhs,
+                        gold::background_color const & rhs);
 }
-constexpr ImVec4 gold::background_color::vector() const
-{
-    return ImVec4{ red, green, blue, alpha };
+namespace konbu {
+template<std::ranges::output_range<YAML::Exception> error_output>
+void read(YAML::Node const & config, gold::background_color & color,
+                                     error_output & errors);
 }
+namespace YAML {
+template<>
+struct convert<gold::background_color> {
+    static Node encode(gold::background_color const & color);
+};
+}
+#include "gold/background_color.tcc"
