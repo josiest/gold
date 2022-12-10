@@ -7,8 +7,8 @@
 inline namespace gold {
 /** A widget will align_cursor with the desired size. */
 struct size {
-    float width = 0.f;
-    float height = 0.f;
+    float width = 200.f;
+    float height = 40.f;
 
     [[nodiscard]] constexpr ImVec2 vector() const;
 };

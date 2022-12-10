@@ -15,6 +15,7 @@
 // data types and structure
 #include <string>
 #include <vector>
+#include <variant>
 
 // serialization and i/o
 #include <yaml-cpp/yaml.h>
@@ -163,6 +164,51 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
         editor.widgets, editor.selected_widget);
     gold::show_component_options<gold::background_color>(
         editor.widgets, editor.selected_widget);
+
+    static std::variant<gold::layout, gold::size, gold::background_color>
+    new_component = gold::layout{};
+
+    static std::string_view selected_component =
+        component_info<gold::layout>::public_name;
+
+    if (ImGui::BeginCombo("##Select Component", selected_component.data())) {
+        auto constexpr layout_name = component_info<gold::layout>::public_name;
+        if (ImGui::Selectable(layout_name.data(),
+                              layout_name == selected_component)) {
+            new_component = gold::layout{};
+            selected_component = layout_name;
+        }
+        auto constexpr size_name = component_info<gold::size>::public_name;
+        if (ImGui::Selectable(size_name.data(),
+                              size_name == selected_component)) {
+            new_component = gold::size{};
+            selected_component = size_name;
+        }
+        auto constexpr bg_name =
+            component_info<gold::background_color>::public_name;
+        if (ImGui::Selectable(bg_name.data(),
+                              bg_name == selected_component)) {
+            new_component = gold::background_color{};
+            selected_component = bg_name;
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Add##add-component")) {
+        if (std::holds_alternative<gold::layout>(new_component)) {
+            editor.widgets.emplace<gold::layout>(
+                editor.selected_widget, std::get<gold::layout>(new_component));
+        }
+        else if (std::holds_alternative<gold::size>(new_component)) {
+            editor.widgets.emplace<gold::size>(
+                editor.selected_widget, std::get<gold::size>(new_component));
+        }
+        else if (std::holds_alternative<gold::background_color>(new_component)) {
+            editor.widgets.emplace<gold::background_color>(
+                editor.selected_widget,
+                std::get<gold::background_color>(new_component));
+        }
+    }
     ImGui::End();
 }
 }
