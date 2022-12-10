@@ -5,6 +5,7 @@
 #include <entt/entity/registry.hpp>
 
 // library
+#include "gold/component.hpp"
 #include "gold/render.hpp"
 #include "gold/layout.hpp"
 #include "gold/size.hpp"
@@ -43,19 +44,18 @@ bool show_demo = false;
 bool show_editor = false;
 }
 
-namespace gold {
+inline namespace gold {
 struct editor {
     entt::registry widgets;
     entt::entity selected_widget = entt::null;
 };
 }
 
-namespace ImGui {
+inline namespace gold {
 template<class align_enum>
 requires std::same_as<align_enum, gold::align::horizontal> or
          std::same_as<align_enum, gold::align::vertical>
-void ShowOptions(align_enum & selected_option)
-{
+void show_options(align_enum & selected_option) {
     if (not ImGui::BeginTable("Alignment Options", 4)) {
         ImGui::EndTable();
         return;
@@ -71,8 +71,7 @@ void ShowOptions(align_enum & selected_option)
     ImGui::EndTable();
 }
 
-void ShowOptions(gold::layout & layout)
-{
+void show_options(gold::layout & layout) {
     if (not ImGui::BeginTable("Widget Components", 2)) {
         ImGui::EndTable();
         return;
@@ -81,17 +80,17 @@ void ShowOptions(gold::layout & layout)
     ImGui::Text("Horizontal");
 
     ImGui::TableNextColumn();
-    ShowOptions(layout.horizontal);
+    gold::show_options(layout.horizontal);
 
     ImGui::TableNextColumn();
     ImGui::Text("Vertical");
 
     ImGui::TableNextColumn();
-    ShowOptions(layout.vertical);
+    gold::show_options(layout.vertical);
     ImGui::EndTable();
 }
-void ShowOptions(gold::size & size)
-{
+
+void show_options(gold::size & size) {
     if (not ImGui::BeginTable("Widget Size Input", 2)) {
         ImGui::EndTable();
         return;
@@ -107,9 +106,9 @@ void ShowOptions(gold::size & size)
     ImGui::DragFloat("##Widget-Height", &size.height, 1.f, 0.f, FLT_MAX, "%.1f");
     ImGui::EndTable();
 }
-void ShowOptions(gold::background_color & color)
-{
-    float color_values[] {
+
+void show_options(gold::background_color & color) {
+    float color_values[]{
         color.red, color.green, color.blue, color.alpha
     };
     ImGui::ColorEdit4("##Widget-Color", color_values);
@@ -118,7 +117,8 @@ void ShowOptions(gold::background_color & color)
     color.blue = color_values[2];
     color.alpha = color_values[3];
 }
-
+}
+namespace ImGui {
 void ShowEditorWindow(bool * is_open, gold::editor & editor)
 {
     ImGui::WindowView window_params;
@@ -164,7 +164,7 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
         ImGui::Spacing();
 
         ImGui::Indent();
-        ImGui::ShowOptions(*layout);
+        gold::show_options(*layout);
         ImGui::Unindent();
     }
     if (auto * size = editor.widgets.try_get<gold::size>(
@@ -174,24 +174,16 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
         ImGui::Spacing();
 
         ImGui::Indent();
-        ImGui::ShowOptions(*size);
+        gold::show_options(*size);
         ImGui::Unindent();
     }
-    if (auto * bg_color = editor.widgets.try_get<gold::background_color>(
-            editor.selected_widget))
-    {
-        ImGui::Text("Background Color");
-        ImGui::Spacing();
-
-        ImGui::Indent();
-        ImGui::ShowOptions(*bg_color);
-        ImGui::Unindent();
-    }
+    gold::show_component_options<gold::background_color>(
+        editor.widgets, editor.selected_widget);
     ImGui::End();
 }
 }
 
-void render(SDL_Window *)
+void render_demo(SDL_Window *)
 {
     static gold::editor editor;
     static bool has_init = false;
@@ -267,7 +259,7 @@ int main()
         return EXIT_FAILURE;
     }
 
-    system->on_render().connect<&render>();
+    system->on_render().connect<&render_demo>();
     system->on_keydown().connect<&toggle_demo>();
     system->on_keydown().connect<&toggle_editor>();
     system->start();

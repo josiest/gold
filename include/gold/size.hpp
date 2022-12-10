@@ -3,7 +3,7 @@
 #include <ranges>
 #include <yaml-cpp/yaml.h>
 
-namespace gold {
+inline namespace gold {
 /** A widget will align_cursor with the desired size. */
 struct size {
     float width = 0.f;

@@ -2,7 +2,7 @@
 #include <concepts>
 #include <iostream>
 
-namespace gold {
+inline namespace gold {
 
 namespace align {
 enum class horizontal;

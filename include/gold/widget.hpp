@@ -11,7 +11,7 @@ entt::entity read_widget(YAML::Node const & config,
                          entt::registry & widgets,
                          error_output & errors);
 }
-namespace gold {
+inline namespace gold {
 YAML::Emitter &
 write(YAML::Emitter & out, entt::registry const & widgets,
                            entt::entity widget);

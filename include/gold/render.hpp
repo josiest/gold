@@ -2,7 +2,7 @@
 #include <entt/entity/registry.hpp>
 
 class ImVec2;
-namespace gold {
+inline namespace gold {
 namespace align {
 enum class horizontal;
 enum class vertical;

@@ -16,8 +16,10 @@ target_sources(gold PUBLIC
     include/gold/utility.hpp
     include/gold/render.hpp
     include/gold/widget.hpp
+    include/gold/component.hpp
 
     include/gold/impl/widget.tcc
+    include/gold/impl/component.tcc
     include/gold/impl/size.tcc
     include/gold/impl/layout.tcc
     include/gold/impl/background_color.tcc)
@@ -40,3 +42,4 @@ find_package(EnTT REQUIRED)
 target_link_libraries(sketch
     PRIVATE ion::ion gold
     INTERFACE EnTT::EnTT)
+target_compile_options(sketch PRIVATE -fconcepts-diagnostics-depth=2)

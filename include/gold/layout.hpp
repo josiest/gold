@@ -3,7 +3,7 @@
 #include <ranges>
 #include <yaml-cpp/yaml.h>
 
-namespace gold {
+inline namespace gold {
 namespace align {
 /** Horizontal alignment setting */
 enum class horizontal {

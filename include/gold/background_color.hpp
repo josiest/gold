@@ -1,9 +1,10 @@
 #pragma once
+#include "gold/component.hpp"
 #include "imgui/imgui.h"
 #include <ranges>
 #include <yaml-cpp/yaml.h>
 
-namespace gold {
+inline namespace gold {
 
 /** A widget will align_cursor with the desired color. */
 struct background_color {
@@ -16,6 +17,11 @@ struct background_color {
 };
 constexpr float sq_dist(gold::background_color const & lhs,
                         gold::background_color const & rhs);
+
+template<>
+struct component_info<gold::background_color> {
+    static constexpr std::string_view public_name = "Background Color";
+};
 }
 namespace konbu {
 template<std::ranges::output_range<YAML::Exception> error_output>
