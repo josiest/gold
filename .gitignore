@@ -6,6 +6,7 @@
 .vscode/
 cmake-build-debug/
 build/
+imgui.ini
 
 #
 # C++
