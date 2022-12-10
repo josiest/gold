@@ -120,12 +120,31 @@ void show_options(gold::background_color & color) {
 }
 }
 namespace ImGui {
+
+template<gold::editor_option component>
+requires gold::has_public_name<component>
+std::optional<component>
+ComboOption(entt::registry & widgets, entt::entity widget,
+            std::string_view & selected_component)
+{
+    std::string_view constexpr name = component_info<component>::public_name;
+    if (widgets.any_of<component>(widget)) {
+        return std::nullopt;
+    }
+    if (ImGui::Selectable(name.data(), name == selected_component)) {
+        selected_component = name;
+        return component{};
+    }
+    return std::nullopt;
+}
+
 void ShowEditorWindow(bool * is_open, gold::editor & editor)
 {
     ImGui::WindowView window_params;
     window_params.id = "Widget Editor";
     window_params.is_open = is_open;
     window_params.position = { 500.f, 50.f };
+    window_params.size.y += 50.f;
 
     if (not ImGui::NewWindow(window_params)) {
         ImGui::End();
@@ -165,34 +184,28 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
     gold::show_component_options<gold::background_color>(
         editor.widgets, editor.selected_widget);
 
+    ImGui::Text("Add Component");
+    ImGui::Spacing();
+    ImGui::Indent();
     static std::variant<std::monostate, gold::layout,
                         gold::size, gold::background_color>
     new_component;
     static std::string_view selected_component;
-
     if (ImGui::BeginCombo("##Select Component", selected_component.data())) {
-        auto constexpr layout_name = component_info<gold::layout>::public_name;
-        if (not editor.widgets.any_of<gold::layout>(editor.selected_widget) and
-                ImGui::Selectable(layout_name.data(),
-                                  layout_name == selected_component)) {
-            new_component = gold::layout{};
-            selected_component = layout_name;
+        if (auto const layout = ComboOption<gold::layout>(
+            editor.widgets, editor.selected_widget, selected_component))
+        {
+            new_component = *layout;
         }
-        auto constexpr size_name = component_info<gold::size>::public_name;
-        if (not editor.widgets.any_of<gold::size>(editor.selected_widget) and
-                ImGui::Selectable(size_name.data(),
-                                  size_name == selected_component)) {
-            new_component = gold::size{};
-            selected_component = size_name;
+        else if (auto const size = ComboOption<gold::size>(
+            editor.widgets, editor.selected_widget, selected_component))
+        {
+            new_component = *size;
         }
-        auto constexpr bg_name =
-            component_info<gold::background_color>::public_name;
-        if (not editor.widgets.any_of<gold::background_color>(
-                    editor.selected_widget) and
-                ImGui::Selectable(bg_name.data(),
-                                  bg_name == selected_component)) {
-            new_component = gold::background_color{};
-            selected_component = bg_name;
+        else if (auto const bg_color = ComboOption<gold::background_color>(
+            editor.widgets, editor.selected_widget, selected_component))
+        {
+            new_component = *bg_color;
         }
         ImGui::EndCombo();
     }
@@ -208,6 +221,7 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
             ImGui::Button("Add##add-component")) {
         std::visit(add_component, new_component);
     }
+    ImGui::Unindent();
     ImGui::End();
 }
 }
