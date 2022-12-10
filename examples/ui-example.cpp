@@ -194,20 +194,12 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
         ImGui::EndCombo();
     }
     ImGui::SameLine();
+    auto add_component = [&editor](auto const & component) {
+        editor.widgets.emplace<std::remove_cvref_t<decltype(component)>>(
+            editor.selected_widget, component);
+    };
     if (ImGui::Button("Add##add-component")) {
-        if (std::holds_alternative<gold::layout>(new_component)) {
-            editor.widgets.emplace<gold::layout>(
-                editor.selected_widget, std::get<gold::layout>(new_component));
-        }
-        else if (std::holds_alternative<gold::size>(new_component)) {
-            editor.widgets.emplace<gold::size>(
-                editor.selected_widget, std::get<gold::size>(new_component));
-        }
-        else if (std::holds_alternative<gold::background_color>(new_component)) {
-            editor.widgets.emplace<gold::background_color>(
-                editor.selected_widget,
-                std::get<gold::background_color>(new_component));
-        }
+        std::visit(add_component, new_component);
     }
     ImGui::End();
 }
