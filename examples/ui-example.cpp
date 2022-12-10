@@ -157,26 +157,10 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
     }
     ImGui::Separator();
 
-    if (auto * layout = editor.widgets.try_get<gold::layout>(
-            editor.selected_widget))
-    {
-        ImGui::Text("Alignment");
-        ImGui::Spacing();
-
-        ImGui::Indent();
-        gold::show_options(*layout);
-        ImGui::Unindent();
-    }
-    if (auto * size = editor.widgets.try_get<gold::size>(
-            editor.selected_widget))
-    {
-        ImGui::Text("Size");
-        ImGui::Spacing();
-
-        ImGui::Indent();
-        gold::show_options(*size);
-        ImGui::Unindent();
-    }
+    gold::show_component_options<gold::layout>(
+        editor.widgets, editor.selected_widget);
+    gold::show_component_options<gold::size>(
+        editor.widgets, editor.selected_widget);
     gold::show_component_options<gold::background_color>(
         editor.widgets, editor.selected_widget);
     ImGui::End();

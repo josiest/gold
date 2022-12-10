@@ -1,4 +1,5 @@
 #pragma once
+#include "gold/component.hpp"
 #include <string>
 #include <ranges>
 #include <yaml-cpp/yaml.h>
@@ -31,6 +32,11 @@ struct layout {
 
 std::string to_string(align::horizontal const & horizontal);
 std::string to_string(align::vertical const & vert);
+
+template<>
+struct component_info<gold::layout> {
+    static constexpr std::string_view public_name = "Alignment";
+};
 }
 
 namespace konbu {

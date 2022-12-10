@@ -1,4 +1,5 @@
 #pragma once
+#include "gold/component.hpp"
 #include "imgui/imgui.h"
 #include <ranges>
 #include <yaml-cpp/yaml.h>
@@ -12,6 +13,10 @@ struct size {
     [[nodiscard]] constexpr ImVec2 vector() const;
 };
 float sq_dist(gold::size const & lhs, gold::size const & rhs);
+template<>
+struct component_info<gold::size> {
+    static constexpr std::string_view public_name = "Size";
+};
 }
 constexpr ImVec2 gold::size::vector() const
 {
