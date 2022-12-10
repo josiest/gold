@@ -165,29 +165,32 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
     gold::show_component_options<gold::background_color>(
         editor.widgets, editor.selected_widget);
 
-    static std::variant<gold::layout, gold::size, gold::background_color>
-    new_component = gold::layout{};
-
-    static std::string_view selected_component =
-        component_info<gold::layout>::public_name;
+    static std::variant<std::monostate, gold::layout,
+                        gold::size, gold::background_color>
+    new_component;
+    static std::string_view selected_component;
 
     if (ImGui::BeginCombo("##Select Component", selected_component.data())) {
         auto constexpr layout_name = component_info<gold::layout>::public_name;
-        if (ImGui::Selectable(layout_name.data(),
-                              layout_name == selected_component)) {
+        if (not editor.widgets.any_of<gold::layout>(editor.selected_widget) and
+                ImGui::Selectable(layout_name.data(),
+                                  layout_name == selected_component)) {
             new_component = gold::layout{};
             selected_component = layout_name;
         }
         auto constexpr size_name = component_info<gold::size>::public_name;
-        if (ImGui::Selectable(size_name.data(),
-                              size_name == selected_component)) {
+        if (not editor.widgets.any_of<gold::size>(editor.selected_widget) and
+                ImGui::Selectable(size_name.data(),
+                                  size_name == selected_component)) {
             new_component = gold::size{};
             selected_component = size_name;
         }
         auto constexpr bg_name =
             component_info<gold::background_color>::public_name;
-        if (ImGui::Selectable(bg_name.data(),
-                              bg_name == selected_component)) {
+        if (not editor.widgets.any_of<gold::background_color>(
+                    editor.selected_widget) and
+                ImGui::Selectable(bg_name.data(),
+                                  bg_name == selected_component)) {
             new_component = gold::background_color{};
             selected_component = bg_name;
         }
@@ -197,8 +200,12 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
     auto add_component = [&editor](auto const & component) {
         editor.widgets.emplace<std::remove_cvref_t<decltype(component)>>(
             editor.selected_widget, component);
+
+        new_component = std::monostate{};
+        selected_component = "";
     };
-    if (ImGui::Button("Add##add-component")) {
+    if (not std::holds_alternative<std::monostate>(new_component) and
+            ImGui::Button("Add##add-component")) {
         std::visit(add_component, new_component);
     }
     ImGui::End();
