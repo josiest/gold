@@ -61,6 +61,16 @@ void show_options(align_enum & selected_option) {
         ImGui::EndTable();
         return;
     }
+    float constexpr padding = 2.f;
+    float const width = ImGui::CalcTextSize("bottom").x;
+
+    for (int i = 0; i < 4; ++i) {
+        using namespace std::string_literals;
+        std::string const col_name = "align-"s + std::to_string(i);
+        ImGui::TableSetupColumn(col_name.c_str(),
+                                ImGuiTableColumnFlags_WidthFixed,
+                                width + padding);
+    }
     for (int i = 0; i < 4; ++i) {
         ImGui::TableNextColumn();
         align_enum option{ i };
@@ -77,6 +87,11 @@ void show_options(gold::layout & layout) {
         ImGui::EndTable();
         return;
     }
+    float constexpr padding = 20.f;
+    float const width = ImGui::CalcTextSize("Horizontal").x;
+    ImGui::TableSetupColumn("Names", ImGuiTableColumnFlags_WidthFixed,
+                                     width + padding);
+
     ImGui::TableNextColumn();
     ImGui::Text("Horizontal");
 
@@ -144,13 +159,12 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
     window_params.id = "Widget Editor";
     window_params.is_open = is_open;
     window_params.position = { 500.f, 50.f };
-    window_params.size.y += 50.f;
+    window_params.size.y += 100.f;
 
     if (not ImGui::NewWindow(window_params)) {
         ImGui::End();
         return;
     }
-
     ImGui::Text("Save Widget");
     ImGui::Spacing();
 

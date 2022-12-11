@@ -35,6 +35,7 @@ std::string to_string(align::vertical const & vert);
 
 template<>
 struct component_info<gold::layout> {
+    using type = gold::layout;
     static constexpr std::string_view public_name = "Alignment";
 };
 }
