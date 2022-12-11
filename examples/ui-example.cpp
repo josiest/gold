@@ -111,15 +111,18 @@ void show_options(gold::size & size) {
         ImGui::EndTable();
         return;
     }
-    ImGui::TableNextColumn();
-    ImGui::Text("Width");
-    ImGui::TableNextColumn();
-    ImGui::Text("Height");
+    float constexpr input_width = 140.f;
+    ImGui::TableSetupColumn("size-width-input",
+                            ImGuiTableColumnFlags_WidthFixed,
+                            input_width);
+    ImGui::TableSetupColumn("size-height-input",
+                            ImGuiTableColumnFlags_WidthFixed,
+                            input_width);
 
     ImGui::TableNextColumn();
-    ImGui::DragFloat("##Widget-Width", &size.width, 1.f, 0.f, FLT_MAX, "%.1f");
+    ImGui::DragFloat("Width", &size.width, 1.f, 0.f, FLT_MAX, "%.1f");
     ImGui::TableNextColumn();
-    ImGui::DragFloat("##Widget-Height", &size.height, 1.f, 0.f, FLT_MAX, "%.1f");
+    ImGui::DragFloat("Height", &size.height, 1.f, 0.f, FLT_MAX, "%.1f");
     ImGui::EndTable();
 }
 
@@ -136,6 +139,33 @@ void show_options(gold::background_color & color) {
 }
 namespace ImGui {
 
+void ShowSaveOption(entt::registry & widgets, entt::entity widget)
+{
+    ImGui::Text("Save Widget");
+    ImGui::Spacing();
+
+    static char widget_filename[128] = "widget.yaml";
+    ImGui::InputText("##Widget-Path-Input", widget_filename,
+                     IM_ARRAYSIZE(widget_filename));
+
+    auto const widget_path = paths::assets/widget_filename;
+    ImGui::SameLine();
+    static std::string saved_to;
+    if (ImGui::Button("Save")) {
+        YAML::Emitter out;
+        gold::write(out, widgets, widget);
+        std::ofstream file{ widget_path.string(), std::ios_base::trunc };
+        file << out.c_str();
+        file.close();
+        saved_to = widget_path.string();
+    }
+    if (not saved_to.empty()) {
+        ImGui::Text("Widget saved to:");
+        ImGui::Indent();
+        ImGui::Text("%s", saved_to.c_str());
+        ImGui::Unindent();
+    }
+}
 template<gold::editor_option component>
 requires gold::has_public_name<component>
 std::optional<component>
@@ -152,7 +182,47 @@ ComboOption(entt::registry & widgets, entt::entity widget,
     }
     return std::nullopt;
 }
+void ShowAddComponentOption(entt::registry & widgets, entt::entity widget)
+{
+    ImGui::Text("Add Component");
+    ImGui::Spacing();
+    ImGui::Indent();
+    static std::variant<std::monostate, gold::layout,
+        gold::size, gold::background_color>
+        new_component;
+    static std::string_view selected_component;
+    if (ImGui::BeginCombo("##Select Component", selected_component.data())) {
+        if (auto const layout = ComboOption<gold::layout>(
+            widgets, widget, selected_component))
+        {
+            new_component = *layout;
+        }
+        else if (auto const size = ComboOption<gold::size>(
+            widgets, widget, selected_component))
+        {
+            new_component = *size;
+        }
+        else if (auto const bg_color = ComboOption<gold::background_color>(
+            widgets, widget, selected_component))
+        {
+            new_component = *bg_color;
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::SameLine();
+    auto add_component = [&widgets, widget](auto const & component) {
+        widgets.emplace<std::remove_cvref_t<decltype(component)>>(
+            widget, component);
 
+        new_component = std::monostate{};
+        selected_component = "";
+    };
+    if (not std::holds_alternative<std::monostate>(new_component) and
+        ImGui::Button("Add##add-component")) {
+        std::visit(add_component, new_component);
+    }
+    ImGui::Unindent();
+}
 void ShowEditorWindow(bool * is_open, gold::editor & editor)
 {
     ImGui::WindowView window_params;
@@ -165,31 +235,12 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
         ImGui::End();
         return;
     }
-    ImGui::Text("Save Widget");
+    ShowSaveOption(editor.widgets, editor.selected_widget);
+    ShowAddComponentOption(editor.widgets, editor.selected_widget);
+
     ImGui::Spacing();
-
-    static char widget_filename[128] = "widget.yaml";
-    ImGui::InputText("##Widget-Path-Input", widget_filename,
-                     IM_ARRAYSIZE(widget_filename));
-
-    auto const widget_path = paths::assets/widget_filename;
-    ImGui::SameLine();
-    static std::string saved_to;
-    if (ImGui::Button("Save")) {
-        YAML::Emitter out;
-        gold::write(out, editor.widgets, editor.selected_widget);
-        std::ofstream file{ widget_path.string(), std::ios_base::trunc };
-        file << out.c_str();
-        file.close();
-        saved_to = widget_path.string();
-    }
-    if (not saved_to.empty()) {
-        ImGui::Text("Widget saved to:");
-        ImGui::Indent();
-        ImGui::Text("%s", saved_to.c_str());
-        ImGui::Unindent();
-    }
     ImGui::Separator();
+    ImGui::Spacing();
 
     gold::show_component_options<gold::layout>(
         editor.widgets, editor.selected_widget);
@@ -198,44 +249,6 @@ void ShowEditorWindow(bool * is_open, gold::editor & editor)
     gold::show_component_options<gold::background_color>(
         editor.widgets, editor.selected_widget);
 
-    ImGui::Text("Add Component");
-    ImGui::Spacing();
-    ImGui::Indent();
-    static std::variant<std::monostate, gold::layout,
-                        gold::size, gold::background_color>
-    new_component;
-    static std::string_view selected_component;
-    if (ImGui::BeginCombo("##Select Component", selected_component.data())) {
-        if (auto const layout = ComboOption<gold::layout>(
-            editor.widgets, editor.selected_widget, selected_component))
-        {
-            new_component = *layout;
-        }
-        else if (auto const size = ComboOption<gold::size>(
-            editor.widgets, editor.selected_widget, selected_component))
-        {
-            new_component = *size;
-        }
-        else if (auto const bg_color = ComboOption<gold::background_color>(
-            editor.widgets, editor.selected_widget, selected_component))
-        {
-            new_component = *bg_color;
-        }
-        ImGui::EndCombo();
-    }
-    ImGui::SameLine();
-    auto add_component = [&editor](auto const & component) {
-        editor.widgets.emplace<std::remove_cvref_t<decltype(component)>>(
-            editor.selected_widget, component);
-
-        new_component = std::monostate{};
-        selected_component = "";
-    };
-    if (not std::holds_alternative<std::monostate>(new_component) and
-            ImGui::Button("Add##add-component")) {
-        std::visit(add_component, new_component);
-    }
-    ImGui::Unindent();
     ImGui::End();
 }
 }
